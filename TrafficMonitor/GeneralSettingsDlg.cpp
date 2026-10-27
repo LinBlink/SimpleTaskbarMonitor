@@ -303,9 +303,10 @@ BOOL CGeneralSettingsDlg::OnInitDialog()
         CheckDlgButton(IDC_AUTO_RUN_METHOD_REGESTRY_RADIO, TRUE);
 
 
-    ((CButton*)GetDlgItem(IDC_SAVE_TO_APPDATA_RADIO))->SetCheck(!m_data.portable_mode);
-    ((CButton*)GetDlgItem(IDC_SAVE_TO_PROGRAM_DIR_RADIO))->SetCheck(m_data.portable_mode);
-    GetDlgItem(IDC_SAVE_TO_PROGRAM_DIR_RADIO)->EnableWindow(theApp.m_module_dir_writable);
+    m_data.portable_mode = true;
+    GetDlgItem(IDC_SAVE_TO_APPDATA_RADIO)->ShowWindow(SW_HIDE);
+    CheckDlgButton(IDC_SAVE_TO_PROGRAM_DIR_RADIO, TRUE);
+    EnableDlgCtrl(IDC_SAVE_TO_PROGRAM_DIR_RADIO, FALSE);
 
     ((CButton*)GetDlgItem(IDC_AUTO_RUN_CHECK))->SetCheck(m_data.auto_run);
 
@@ -408,29 +409,31 @@ BOOL CGeneralSettingsDlg::OnInitDialog()
     }
 #endif
 
+    CheckDlgButton(IDC_CPU_CHECK, m_data.IsHardwareEnable(HI_CPU));
+    CheckDlgButton(IDC_GPU_CHECK, m_data.IsHardwareEnable(HI_GPU));
     //不含温度监控的版本，禁用温度相关的控件
 #ifdef WITHOUT_TEMPERATURE
-    EnableDlgCtrl(IDC_CPU_TEMP_TIP_CHECK, false);
-    EnableDlgCtrl(IDC_CPU_TEMP_TIP_EDIT, false);
-    EnableDlgCtrl(IDC_GPU_TEMP_TIP_CHECK, false);
-    EnableDlgCtrl(IDC_GPU_TEMP_TIP_EDIT, false);
+    EnableDlgCtrl(IDC_CPU_TEMP_TIP_CHECK, true);
+    EnableDlgCtrl(IDC_CPU_TEMP_TIP_EDIT, true);
+    EnableDlgCtrl(IDC_GPU_TEMP_TIP_CHECK, true);
+    EnableDlgCtrl(IDC_GPU_TEMP_TIP_EDIT, true);
     EnableDlgCtrl(IDC_HDD_TEMP_TIP_CHECK, false);
     EnableDlgCtrl(IDC_HDD_TIP_EDIT, false);
     EnableDlgCtrl(IDC_MBD_TEMP_TIP_CHECK, false);
     EnableDlgCtrl(IDC_MBD_TEMP_TIP_EDIT, false);
-    EnableDlgCtrl(IDC_CPU_CHECK, false);
-    EnableDlgCtrl(IDC_GPU_CHECK, false);
+    EnableDlgCtrl(IDC_CPU_CHECK, true);
+    EnableDlgCtrl(IDC_GPU_CHECK, true);
     EnableDlgCtrl(IDC_HDD_CHECK, false);
     EnableDlgCtrl(IDC_MBD_CHECK, false);
     //EnableDlgCtrl(IDC_SELECT_HARD_DISK_COMBO, false);
     EnableDlgCtrl(IDC_SELECT_CPU_COMBO, false);
-    EnableDlgCtrl(IDC_CPU_TEMP_STATIC, false);
-    EnableDlgCtrl(IDC_GPU_TEMP_STATIC, false);
+    EnableDlgCtrl(IDC_CPU_TEMP_STATIC, true);
+    EnableDlgCtrl(IDC_GPU_TEMP_STATIC, true);
     EnableDlgCtrl(IDC_HDD_STATIC, false);
     EnableDlgCtrl(IDC_MBD_TEMP_STATIC, false);
     //EnableDlgCtrl(IDC_SELECT_HDD_STATIC, false);
     EnableDlgCtrl(IDC_SELECT_CPU_STATIC, false);
-    EnableDlgCtrl(IDC_HARDWARE_MONITOR_STATIC, false);
+    EnableDlgCtrl(IDC_HARDWARE_MONITOR_STATIC, true);
 #endif
 
     m_plugin_manager_btn.SetIcon(theApp.GetMenuIcon(IDI_PLUGINS));
@@ -504,12 +507,7 @@ void CGeneralSettingsDlg::OnOK()
     }
     m_show_all_interface_modified = (m_data.show_all_interface != theApp.m_general_data.show_all_interface);
 
-    //获取数据文件保存位置的设置
-    m_data.portable_mode = (((CButton*)GetDlgItem(IDC_SAVE_TO_PROGRAM_DIR_RADIO))->GetCheck() != 0);
-    if (m_data.portable_mode != theApp.m_general_data.portable_mode)
-    {
-        MessageBox(CCommon::LoadText(IDS_CFG_DIR_CHANGED_INFO), NULL, MB_ICONINFORMATION | MB_OK);
-    }
+    m_data.portable_mode = true;
 
     //m_taskbar_item_modified = (theApp.m_taskbar_data.display_item != taskbar_displat_item_ori);
 

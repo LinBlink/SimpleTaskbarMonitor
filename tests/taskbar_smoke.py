@@ -1,7 +1,7 @@
 import ctypes as C
 from ctypes import wintypes as W
 from pathlib import Path
-import argparse, re, subprocess, tempfile, time
+import argparse, re, subprocess, tempfile, time, shutil, hashlib
 
 u=C.WinDLL('user32',use_last_error=True)
 u.GetDesktopWindow.restype=W.HWND
@@ -36,16 +36,24 @@ args=parser.parse_args()
 exe=args.executable.resolve()
 assert exe.is_file(), exe
 assert exe.parent.name.lower().startswith('debug'), 'Use a Debug build so configuration stays in the test working directory'
-assert not u.FindWindowW('TrafficMonitor_r7XZaS4p',None), 'Close existing TrafficMonitor instances first'
+# Release installations may remain running; this test uses the separate Debug mutex.
 resource_header=Path(__file__).resolve().parents[1]/'TrafficMonitor/resource.h'
 header=resource_header.read_text(encoding='utf-8-sig')
 option_id=int(re.search(r'#define ID_OPTIONS2\s+(\d+)',header)[1])
 temporary=tempfile.TemporaryDirectory(prefix='trafficmonitor-smoke-')
 work=Path(temporary.name)
+program=work/'program';program.mkdir()
+shutil.copy2(exe,program/'TrafficMonitor.exe')
+exe=program/'TrafficMonitor.exe'
+cwd=work/'cwd';cwd.mkdir()
+(cwd/'config.ini').write_text('[sentinel]\nkeep=unchanged\n')
+appdata=Path.home()/'AppData/Roaming/TrafficMonitor/config.ini'
+appdata_before=hashlib.sha256(appdata.read_bytes()).digest() if appdata.exists() else None
 for mode in ['core','display']:
     legacy='show_task_bar_wnd=false\n' if mode=='display' else ''
-    (work/'config.ini').write_text('[config]\n'+legacy+'show_notify_icon=true\n[other]\nno_multistart_warning=true\n',encoding='utf-8')
-    p=subprocess.Popen([str(exe)],cwd=work)
+    (program/'global_cfg.ini').write_text('[config]\nportable_mode=false\n')
+    (program/'config.ini').write_text('[config]\n'+legacy+'show_notify_icon=true\n[task_bar]\ntask_bar_text_color=123,456,987,654\ntask_bar_text_color_item_ids=AIUsageCodex5h,cpu_temp_string\nspecify_each_item_color=true\n[other]\nno_multistart_warning=true\n',encoding='utf-8')
+    p=subprocess.Popen([str(exe)],cwd=cwd)
     try:
         time.sleep(5)
         found=windows(p.pid)
@@ -93,7 +101,19 @@ for mode in ['core','display']:
         code=p.wait(timeout=10)
         assert code==0, f'Exit failed: {code}'
         assert not windows(p.pid), 'Windows remained after exit'
-        print(mode,'PASS',flush=True)
+        config=(program/'config.ini').read_text(encoding='utf-8-sig')
+        assert 'task_bar_text_color_item_ids' in config, 'Colors must be saved with stable item IDs'
+        ids=re.search(r'^task_bar_text_color_item_ids\s*=\s*"?([^"\r\n]+)',config,re.M)[1].split(',')
+        numbers=re.search(r'^task_bar_text_color\s*=\s*([^\r\n]+)',config,re.M)[1].rstrip(',').split(',')
+        restored={name:tuple(map(int,numbers[i*2:i*2+2])) for i,name in enumerate(ids)}
+        assert restored['AIUsageCodex5h']==(123,456), 'AI text color changed'
+        assert restored['cpu_temp_string']==(987,654), 'CPU temperature color changed'
+        assert 'cpu_temp_string' in config and 'gpu_temp_string' in config, 'Lite must retain CPU/GPU temperature items'
+        global_config=(program/'global_cfg.ini').read_text(encoding='utf-8-sig')
+        assert re.search(r'portable_mode\s*=\s*true',global_config), 'Program directory must override old AppData settings'
+        assert (cwd/'config.ini').read_text()=='[sentinel]\nkeep=unchanged\n', 'Working-directory config was touched'
+        assert (hashlib.sha256(appdata.read_bytes()).digest() if appdata.exists() else None)==appdata_before, 'AppData config was touched'
+        print(mode,'PASS: taskbar, colors by ID, CPU/GPU entries, program-directory config',flush=True)
     finally:
         if p.poll() is None:
             p.terminate(); p.wait(timeout=5)

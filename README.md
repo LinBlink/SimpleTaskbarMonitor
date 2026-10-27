@@ -1,48 +1,46 @@
-**简体中文 | [English](./README_en-us.md)**
+# TrafficMonitor Lite 任务栏版
 
-# TrafficMonitor 任务栏版
+源码只在本仓库维护，运行目录为 `C:\_FLEX\TrafficMonitor`。先修改、测试并提交源码，再部署；不使用旧版主程序，不切换到标准版构建。
 
-本分支仅在 Windows 任务栏中显示监控信息。启动后自动创建任务栏窗口，默认显示上传和下载速度；旧配置中的 `show_task_bar_wnd` 不再影响启动。
+保留任务栏网速、CPU/内存等监控，以及内置 AI 用量、双倒数日、电池和功耗。四项功能直接链接进主程序，不扫描外部插件 DLL。
 
-## 保留功能
+## 配置与颜色
 
-- 任务栏显示网速、CPU、内存、CPU 频率、显卡和硬盘利用率。
-- 自动或手动选择网卡；配置显示项目、顺序、字体、颜色、单位和占用图。
-- Windows 10 / Windows 11 任务栏布局，以及副显示器任务栏支持。
-- 托盘菜单、开机启动、语言设置与监控间隔设置。
-- 为任务栏提供额外显示项目的插件系统。
-- 标准构建中的可选温度采集；Lite 构建不含内置温度监控。
+所有构建（包括 Debug）固定读写 `TrafficMonitor.exe` 同目录的 `config.ini` 和 `global_cfg.ini`。工作目录、AppData、旧 `portable_mode=false` 设置都不能改变这个位置。配置目录不可写时不会回退到其他目录。
 
-已移除桌面悬浮窗、主窗口设置、皮肤系统、历史流量文件与统计界面、网络详情界面、程序和插件的自动更新检查。
+文本颜色仍使用原有 `task_bar_text_color`、预设 `defaultN_text_color` 数值，新增对应的 `_item_ids` 元数据。增删、重排温度或 AI 项目后按 ID 对齐颜色，避免按序号读错。部署前自动备份程序目录配置；对旧配置做一次颜色及顺序迁移，并保留当前勾选的 AI/倒数日项目。
 
-## 使用
+## Lite 中的温度采集
 
-1. 启动 `TrafficMonitor.exe`，监控信息自动出现在任务栏中。
-2. 右键任务栏信息，选择“显示设置”配置显示项目和顺序。
-3. 选择“选项”设置任务栏字体、颜色、布局，以及常规参数。
-4. 选择“插件管理”管理插件。插件 DLL 放在程序目录的 `plugins` 文件夹中，重启后加载。
-5. 选择“退出”关闭程序。关闭任务栏显示窗口也会退出程序。
+继续使用 `Release (lite)` / `Debug (lite)` 和 `WITHOUT_TEMPERATURE` 编译主程序。CPU、GPU 温度作为新增 Lite 能力，由本仓库 `helpers/TemperatureWorker.cs` 构建的隔离进程采集；复用已随源码提供的 LibreHardwareMonitor 传感器库，不加载旧 `OpenHardwareMonitorApi.dll`，不启动旧 TrafficMonitor。
 
-托盘图标提供同一套菜单。任务栏不可用时保留托盘入口；遇到显示问题请参考[常见问题](./Help.md)。
+设置中的 CPU/GPU 监控开关控制采集，任务栏“显示设置”控制显示。没有可用读数或数据过期时显示 `--`。采集进程有父进程与 Windows Job 约束，并支持退出信号；结果保存在程序目录 `temperature.cache.ini`。传感器库保留其原有许可及硬件访问要求。
 
-任务栏提示中的今日流量仅累计本次运行期间的数据，跨日清零，重启程序后重新累计，不写入历史流量文件。
+## 开发与部署
 
-![任务栏显示示例](./Screenshots/taskbar.PNG)
-
-## 构建
-
-使用 Visual Studio 2022 的“使用 C++ 的桌面开发”、MFC 和 Windows SDK 组件，打开 `TrafficMonitor_Lite.sln`。推荐构建不含内置温度监控的 Lite 版本：
+需要 Visual Studio C++、MFC、Windows SDK、.NET Framework 4.x C# 编译器和 Python 3。
 
 ```powershell
-msbuild TrafficMonitor_Lite.sln /m /p:Configuration="Release (lite)" /p:Platform=x64
+.\build.ps1 -Configuration "Debug (lite)"
+.\test.cmd
+.\build.ps1
+.\deploy.ps1 -Destination C:\_FLEX\TrafficMonitor
 ```
 
-可选平台为 `x64`、`x86` 和 `ARM64EC`，调试配置为 `Debug (lite)`。如使用 Visual Studio 2026，可追加 `/p:PlatformToolset=v145`；默认工具集为 `v143`。
+产物位于 `artifacts/build/x64/配置名/`。部署脚本会关闭安装目录中的当前实例，保存并备份其配置，然后复制从本仓库构建的 Lite 主程序、AI 查询助手和温度采集进程，再启动新版。部署标记记录本仓库路径、Git 提交和构建类型。
 
-x64 Release 产物位于 `Bin/x64/Release (lite)/TrafficMonitor.exe`。运行需要对应架构的 Microsoft Visual C++ 运行库。`TrafficMonitor.sln` 保留标准构建及其硬件监控依赖。
+AI 用量认证仍由现有查询助手处理，配置、加密密钥和缓存不随构建复制。双倒数日配置保留在 `plugins/Countdown.ini`。功耗是电池端充放电功率：正值为充电、负值为放电，不代表整机插座功耗。
 
-## 来源与许可
+## 验证
 
-基于 [zhongyang219/TrafficMonitor](https://github.com/zhongyang219/TrafficMonitor) 精简。上游发布包与文档可能包含本分支已移除的功能，请以本分支代码和说明为准。
+`test.cmd` 验证网络快照边界、AI 额度解析、倒数日、电池未知值、颜色 ID 对齐、旧配置迁移，以及实际任务栏窗口、功能设置、程序目录保存和退出。测试使用临时程序目录，并断言工作目录和 AppData 配置没有被改写。
 
-许可见 [LICENSE](./LICENSE) 和 [LICENSE_CN](./LICENSE_CN)。历史版本记录保留在 [UpdateLog](./UpdateLog/update_log.md)。
+可额外运行实际传感器测试：
+
+```powershell
+python tests/temperature_smoke.py "artifacts/build/x64/Debug (lite)/TrafficMonitor.exe"
+```
+
+预先存在的临时诊断改动保存在 `artifacts/before-native-refactor/`。`.origtest/` 保留不动。
+
+上游为 [zhongyang219/TrafficMonitor](https://github.com/zhongyang219/TrafficMonitor)，许可见 [LICENSE](./LICENSE)。

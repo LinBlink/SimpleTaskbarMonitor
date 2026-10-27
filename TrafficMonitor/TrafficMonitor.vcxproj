@@ -777,6 +777,8 @@
     <ClInclude Include="Builtin\DateMath.h" />
     <ClInclude Include="Builtin\PowerValues.h" />
     <ClInclude Include="Builtin\ResetHours.h" />
+    <ClInclude Include="StableItemColors.h" />
+    <ClInclude Include="Builtin\Temperature.h" />
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="CAutoAdaptSettingsDlg.h" />
     <ClInclude Include="AdapterCommon.h" />
@@ -873,6 +875,10 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ClCompile Include="Builtin\Power.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="Builtin\Temperature.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

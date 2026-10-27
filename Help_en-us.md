@@ -24,7 +24,7 @@ They have been removed in this taskbar edition, along with network details and u
 
 ## How do I use plugins or temperature items?
 
-Place compatible plugin DLLs in the `plugins` directory beside the executable, restart, then configure Plugin Manager and Display Settings. Plugin architecture must match the executable. Lite builds omit built-in temperature monitoring; temperature plugins can supply their own items. Standard builds retain optional built-in temperature monitoring.
+Place compatible plugin DLLs in the `plugins` directory beside the executable, restart, then configure Plugin Manager and Display Settings. Plugin architecture must match the executable. Lite includes CPU/GPU temperature collection through the bundled isolated worker. Configuration is always saved in the program directory.
 
 ## How do I quit?
 

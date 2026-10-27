@@ -15,6 +15,7 @@
 #include "WineTaskbarDlg.h"
 #include "TaskbarHelper.h"
 #include "Builtin/BuiltinFeatures.h"
+#include "Builtin/Temperature.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -934,6 +935,10 @@ void CTaskbarCore::DoMonitorAcquisition()
 #endif
 
     Builtin::SampleHardware();
+#ifdef WITHOUT_TEMPERATURE
+    Builtin::SampleTemperatures(theApp.m_general_data.hardware_monitor_item, theApp.m_general_data.cpu_core_name,
+        theApp.m_cpu_temperature, theApp.m_gpu_temperature);
+#endif
 
     m_monitor_time_cnt++;
 

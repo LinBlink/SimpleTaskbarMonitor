@@ -125,10 +125,7 @@ void CTrafficMonitorApp::LoadConfig()
     m_taskbar_data.show_taskbar_wnd_in_secondary_display = ini.GetBool(L"task_bar", L"show_taskbar_wnd_in_secondary_display", false);
     m_taskbar_data.secondary_display_index = ini.GetInt(L"task_bar", L"secondary_display_index", 0);
 
-    //不含温度监控的版本，不显示温度监控相关项目
 #ifdef WITHOUT_TEMPERATURE
-    m_taskbar_data.display_item.Remove(TDI_CPU_TEMP);
-    m_taskbar_data.display_item.Remove(TDI_GPU_TEMP);
     m_taskbar_data.display_item.Remove(TDI_HDD_TEMP);
     m_taskbar_data.display_item.Remove(TDI_MAIN_BOARD_TEMP);
 #endif
@@ -367,34 +364,17 @@ void CTrafficMonitorApp::LoadPluginDisabledSettings()
 
 void CTrafficMonitorApp::LoadGlobalConfig()
 {
-    bool portable_mode_default{ false };
-    wstring global_cfg_path{ m_module_dir + L"global_cfg.ini" };
-    if (!CCommon::FileExist(global_cfg_path.c_str()))       //如果global_cfg.ini不存在，则根据AppData/Roaming/TrafficMonitor目录下是否存在config.ini来判断配置文件的保存位置
-    {
-        portable_mode_default = !CCommon::FileExist((m_appdata_dir + L"config.ini").c_str());
-    }
-
-    CIniHelper ini{ global_cfg_path };
-    m_general_data.portable_mode = ini.GetBool(L"config", L"portable_mode", portable_mode_default);
-
-    //执行一次保存操作，以检查当前目录是否有写入权限
+    // Configuration always belongs to this executable, including Debug builds.
+    m_general_data.portable_mode = true;
+    CIniHelper ini{ m_module_dir + L"global_cfg.ini" };
+    ini.WriteBool(L"config", L"portable_mode", true);
     m_module_dir_writable = ini.Save();
-
-    if (m_module_dir.find(CCommon::GetTemplateDir()) != wstring::npos)      //如果当前路径是在Temp目录下，则强制将数据保存到Appdata
-    {
-        m_module_dir_writable = false;
-    }
-
-    if (!m_module_dir_writable)              //如果当前目录没有写入权限，则设置配置保存到AppData目录
-    {
-        m_general_data.portable_mode = false;
-    }
 }
 
 void CTrafficMonitorApp::SaveGlobalConfig()
 {
     CIniHelper ini{ m_module_dir + L"global_cfg.ini" };
-    ini.WriteBool(L"config", L"portable_mode", m_general_data.portable_mode);
+    ini.WriteBool(L"config", L"portable_mode", true);
 
     //检查是否保存成功
     if (!ini.Save())
@@ -696,19 +676,11 @@ BOOL CTrafficMonitorApp::InitInstance()
     }
     m_module_dir = CCommon::GetModuleDir();
     m_system_dir = CCommon::GetSystemDir();
-    m_appdata_dir = CCommon::GetAppDataConfigDir();
+    m_appdata_dir = m_module_dir; // Compatibility field; never access AppData.
 
     LoadGlobalConfig();
 
-#ifdef _DEBUG
-    m_config_dir = L".\\";
-#else
-    if (m_general_data.portable_mode)
-        m_config_dir = m_module_dir;
-    else
-        m_config_dir = m_appdata_dir;
-#endif
-    //AppData里面的程序配置文件路径
+    m_config_dir = m_module_dir;
     m_config_path = m_config_dir + L"config.ini";
     m_log_path = m_config_dir + L"error.log";
 

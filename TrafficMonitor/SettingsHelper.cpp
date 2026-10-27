@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "SettingsHelper.h"
 #include "TrafficMonitor.h"
+#include "StableItemColors.h"
 
 CSettingsHelper::CSettingsHelper()
     : CIniHelper(theApp.m_config_path)
@@ -76,24 +77,17 @@ void CSettingsHelper::LoadTaskbarWndColors(const wchar_t* AppName, const wchar_t
     _GetString(AppName, KeyName, str);
     std::vector<wstring> split_result;
     CCommon::StringSplit(str, L',', split_result);
+    std::vector<wstring> saved_ids, current_ids;
+    CCommon::StringSplit(GetString(AppName, (std::wstring(KeyName) + L"_item_ids").c_str(), L""), L',', saved_ids);
+    for (const auto& item : theApp.m_plugins.AllDisplayItemsWithPlugins())
+        current_ids.push_back(item.GetItemIniKeyName());
+    const auto colors = StableItemColors::Decode(split_result, saved_ids, current_ids, _wtoi(default_str));
     size_t index = 0;
-    COLORREF default_color = _wtoi(default_str);
-    for (auto iter = theApp.m_plugins.AllDisplayItemsWithPlugins().begin(); iter != theApp.m_plugins.AllDisplayItemsWithPlugins().end(); ++iter)
+    for (const auto& item : theApp.m_plugins.AllDisplayItemsWithPlugins())
     {
-        if (index < split_result.size())
-            text_colors[*iter].label = _wtoi(split_result[index].c_str());
-        //else if (!split_result.empty())
-        //    text_colors[*iter].label = _wtoi(split_result[0].c_str());
-        else
-            text_colors[*iter].label = default_color;
-
-        if (index + 1 < split_result.size())
-            text_colors[*iter].value = _wtoi(split_result[index + 1].c_str());
-        //else if (split_result.size() > 1)
-        //    text_colors[*iter].value = _wtoi(split_result[1].c_str());
-        else
-            text_colors[*iter].value = default_color;
-        index += 2;
+        text_colors[item].label = colors[index].label;
+        text_colors[item].value = colors[index].value;
+        ++index;
     }
 }
 
@@ -107,13 +101,17 @@ void CSettingsHelper::LoadTaskbarWndColors(const wchar_t* AppName, const wchar_t
 void CSettingsHelper::SaveTaskbarWndColors(const wchar_t* AppName, const wchar_t* KeyName, const std::map<CommonDisplayItem, TaskbarItemColor>& text_colors)
 {
     CString str;
-    for (auto iter = text_colors.begin(); iter != text_colors.end(); ++iter)
+    std::wstring ids;
+    for (const auto& entry : text_colors)
     {
         CString tmp;
-        tmp.Format(_T("%d,%d,"), iter->second.label, iter->second.value);
+        tmp.Format(_T("%d,%d,"), entry.second.label, entry.second.value);
         str += tmp;
+        if (!ids.empty()) ids += L",";
+        ids += entry.first.GetItemIniKeyName();
     }
     _WriteString(AppName, KeyName, wstring(str));
+    WriteString(AppName, (std::wstring(KeyName) + L"_item_ids").c_str(), ids);
 }
 
 void CSettingsHelper::LoadDisplayStr(const wchar_t* AppName, DispStrings& disp_str, bool is_main_window) const
