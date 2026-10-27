@@ -7,3 +7,5 @@ All configurations are stored beside the executable. Neither the working directo
 AI usage, dual countdown, battery and power are compiled into the host. CPU/GPU temperatures are new Lite functionality, collected by an isolated worker built from `helpers/TemperatureWorker.cs` and the bundled LibreHardwareMonitor library. The host retains `WITHOUT_TEMPERATURE`, does not load the old hardware API DLL and does not run an older application.
 
 Use `build.ps1`, `test.cmd`, then `deploy.ps1`. Output goes to `artifacts/build/x64/`. Deployment backs up existing configuration and records the source commit. Account credentials and caches are never copied from the source tree. See the [Chinese README](./README.md) for detailed paths, tests and migration behavior.
+
+AI usage is grouped per provider. Codex, MiniMax and Claude show remaining short-window %, short-window reset hours, weekly remaining %, and weekly reset hours; e.g. `CX:17%,3.1h,54%,100.1h`. Cursor shows overall remaining % and billing reset days. Legacy selections and colors migrate to the grouped items.

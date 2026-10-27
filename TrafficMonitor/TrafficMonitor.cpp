@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "TrafficMonitor.h"
 #include "TaskbarCore.h"
+#include "Builtin/GroupedUsage.h"
 #include "crashtool.h"
 #include "WIC.h"
 #include "auto_start_helper.h"
@@ -204,7 +205,14 @@ void CTrafficMonitorApp::LoadConfig()
 
     m_taskbar_data.item_order.Init();
     m_taskbar_data.item_order.FromString(ini.GetString(L"task_bar", L"item_order", L""));
-    m_taskbar_data.plugin_display_item.FromString(ini.GetString(L"task_bar", L"plugin_display_item", L""));
+    std::vector<std::wstring> displayed_ids;
+    CCommon::StringSplit(ini.GetString(L"task_bar",L"plugin_display_item",L""),L',',displayed_ids);
+    std::wstring grouped_ids;
+    for(const auto& id:displayed_ids) {
+        if(!grouped_ids.empty()) grouped_ids+=L",";
+        grouped_ids+=GroupedUsage::SummaryId(id);
+    }
+    m_taskbar_data.plugin_display_item.FromString(grouped_ids);
     m_taskbar_data.auto_save_taskbar_color_settings_to_preset = ini.GetBool(L"task_bar", L"auto_save_taskbar_color_settings_to_preset", true);
 
     m_taskbar_data.show_netspeed_figure = ini.GetBool(L"task_bar", L"show_netspeed_figure", true);

@@ -13,5 +13,7 @@ int main() {
     result=Decode({L"0",L"16777215",L"garbage",L"16777216"},{L"cpu",L"bad"},{L"cpu",L"bad"},9);
     assert(result[0].label==0 && result[0].value==0xffffff);
     assert(result[1].label==9 && result[1].value==9);
+    result=Decode({L"123",L"456"},{L"AIUsageCodex5h"},{L"AIUsageCodexSummary"},9);
+    assert(result[0].label==123 && result[0].value==456);
     std::cout<<"PASS: colors follow stable IDs across insertions/reordering; legacy arrays and RGB bounds\n";
 }

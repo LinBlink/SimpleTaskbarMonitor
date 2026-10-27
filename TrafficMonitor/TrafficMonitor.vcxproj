@@ -777,6 +777,7 @@
     <ClInclude Include="Builtin\DateMath.h" />
     <ClInclude Include="Builtin\PowerValues.h" />
     <ClInclude Include="Builtin\ResetHours.h" />
+    <ClInclude Include="Builtin\GroupedUsage.h" />
     <ClInclude Include="StableItemColors.h" />
     <ClInclude Include="Builtin\Temperature.h" />
     <ClInclude Include="AboutDlg.h" />

@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <cwchar>
+#include "Builtin/GroupedUsage.h"
 namespace StableItemColors {
 struct Pair { unsigned long label{}, value{}; };
 inline unsigned long Number(const std::wstring& text, unsigned long fallback) {
@@ -20,6 +21,7 @@ inline std::vector<Pair> Decode(const std::vector<std::wstring>& numbers,
     std::vector<Pair> result;
     for (const auto& id : currentIds) {
         auto it=colors.find(id);
+        if(it==colors.end()) it=colors.find(GroupedUsage::LegacyColorId(id));
         result.push_back(it==colors.end()?Pair{fallback,fallback}:it->second);
     }
     return result;

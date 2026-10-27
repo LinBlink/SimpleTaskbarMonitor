@@ -106,7 +106,7 @@ for mode in ['core','display']:
         ids=re.search(r'^task_bar_text_color_item_ids\s*=\s*"?([^"\r\n]+)',config,re.M)[1].split(',')
         numbers=re.search(r'^task_bar_text_color\s*=\s*([^\r\n]+)',config,re.M)[1].rstrip(',').split(',')
         restored={name:tuple(map(int,numbers[i*2:i*2+2])) for i,name in enumerate(ids)}
-        assert restored['AIUsageCodex5h']==(123,456), 'AI text color changed'
+        assert restored['AIUsageCodexSummary']==(123,456), 'AI text color changed'
         assert restored['cpu_temp_string']==(987,654), 'CPU temperature color changed'
         assert 'cpu_temp_string' in config and 'gpu_temp_string' in config, 'Lite must retain CPU/GPU temperature items'
         global_config=(program/'global_cfg.ini').read_text(encoding='utf-8-sig')
