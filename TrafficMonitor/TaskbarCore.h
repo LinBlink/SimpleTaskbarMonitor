@@ -1,5 +1,5 @@
 ﻿
-// TrafficMonitorDlg.h : 头文件
+// TaskbarCore.h : 头文件
 //
 
 #pragma once
@@ -26,16 +26,16 @@
 #include "PdhHardwareQuery/DiskUsage.h"
 #include "HistoryTrafficFile.h"
 
-// CTrafficMonitorDlg 对话框
-class CTrafficMonitorDlg : public CDialog
+// CTaskbarCore 对话框
+class CTaskbarCore : public CDialog
 {
     // 构造
 public:
-    CTrafficMonitorDlg(CWnd* pParent = NULL);   // 标准构造函数
-    ~CTrafficMonitorDlg();
+    CTaskbarCore(CWnd* pParent = NULL);   // 标准构造函数
+    ~CTaskbarCore();
     CTaskBarDlg* GetTaskbarWindow() const;
 
-    static CTrafficMonitorDlg* Instance();
+    static CTaskbarCore* Instance();
 
     // 对话框数据
 #ifdef AFX_DESIGN_TIME

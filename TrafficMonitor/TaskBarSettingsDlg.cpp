@@ -10,7 +10,7 @@
 #include "DisplayTextSettingDlg.h"
 #include "SetItemOrderDlg.h"
 #include "WindowsSettingHelper.h"
-#include "TrafficMonitorDlg.h"
+#include "TaskbarCore.h"
 #include "FileDialogEx.h"
 #include "Win11TaskbarSettingDlg.h"
 #include "TaskbarHelper.h"
@@ -387,7 +387,7 @@ BOOL CTaskBarSettingsDlg::OnInitDialog()
 
     m_item_space_edit.SetRange(0, 32);
     m_item_space_edit.SetValue(m_data.item_space);
-    CTaskBarDlg* taskbar_dlg{ CTrafficMonitorDlg::Instance()->GetTaskbarWindow() };
+    CTaskBarDlg* taskbar_dlg{ CTaskbarCore::Instance()->GetTaskbarWindow() };
     m_vertical_margin_edit.SetRange(-10, 10);
     m_vertical_margin_edit.SetValue(m_data.vertical_margin);
     if (taskbar_dlg != nullptr)

@@ -4,7 +4,7 @@
 
 #include "stdafx.h"
 #include "TrafficMonitor.h"
-#include "TrafficMonitorDlg.h"
+#include "TaskbarCore.h"
 #include "crashtool.h"
 #include "UpdateHelper.h"
 #include "Test.h"
@@ -1101,7 +1101,7 @@ BOOL CTrafficMonitorApp::InitInstance()
 
     SendSettingsToPlugin();
 
-    CTrafficMonitorDlg dlg;
+    CTaskbarCore dlg;
     m_pMainWnd = &dlg;
     INT_PTR nResponse = dlg.DoModal();
     if (nResponse == IDOK)
@@ -1458,7 +1458,7 @@ const wchar_t* CTrafficMonitorApp::GetMonitorValueString(MonitorItem item, int i
 
 void CTrafficMonitorApp::ShowNotifyMessage(const wchar_t* strMsg)
 {
-    CTrafficMonitorDlg* pMainWnd = dynamic_cast<CTrafficMonitorDlg*>(m_pMainWnd);
+    CTaskbarCore* pMainWnd = dynamic_cast<CTaskbarCore*>(m_pMainWnd);
     if (pMainWnd != nullptr)
     {
         pMainWnd->ShowNotifyTip(CCommon::LoadText(IDS_TRAFFICMONITOR_PLUGIN_NITIFICATION), strMsg);
@@ -1480,7 +1480,7 @@ const wchar_t* CTrafficMonitorApp::GetPluginConfigDir() const
 
 int CTrafficMonitorApp::GetDPI(DPIType type) const
 {
-    CTrafficMonitorDlg* pMainWnd = CTrafficMonitorDlg::Instance();
+    CTaskbarCore* pMainWnd = CTaskbarCore::Instance();
     switch (type)
     {
     case DPI_MAIN_WND:
@@ -1503,7 +1503,7 @@ void* CTrafficMonitorApp::GetMainWindowHwnd()
 
 void* CTrafficMonitorApp::GetTaskbarWindowHwnd()
 {
-    return CTrafficMonitorDlg::Instance()->GetTaskbarWindow()->GetSafeHwnd();
+    return CTaskbarCore::Instance()->GetTaskbarWindow()->GetSafeHwnd();
 }
 
 const wchar_t* CTrafficMonitorApp::GetStringRes(const wchar_t* key, const wchar_t* section)

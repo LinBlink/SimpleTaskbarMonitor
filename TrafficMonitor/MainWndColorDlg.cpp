@@ -6,7 +6,7 @@
 #include "MainWndColorDlg.h"
 #include "afxdialogex.h"
 #include "CMFCColorDialogEx.h"
-#include "TrafficMonitorDlg.h"
+#include "TaskbarCore.h"
 
 
 // CMainWndColorDlg 对话框
@@ -62,7 +62,7 @@ BOOL CMainWndColorDlg::OnInitDialog()
     m_list_ctrl.SetDrawItemRangMargin(theApp.DPI(2));
 
     static std::set<CommonDisplayItem> all_skin_items;
-    CTrafficMonitorDlg::Instance()->GetCurSkin().GetSkinDisplayItems(all_skin_items);
+    CTaskbarCore::Instance()->GetCurSkin().GetSkinDisplayItems(all_skin_items);
 
     //向列表中插入行
     for (auto iter = all_skin_items.begin(); iter != all_skin_items.end(); ++iter)

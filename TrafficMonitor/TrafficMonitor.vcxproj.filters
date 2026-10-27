@@ -24,7 +24,7 @@
     <Filter Include="源文件和头文件\TrafficMonitor">
       <UniqueIdentifier>{3a1e6295-c622-4708-b984-c5e7d05db5df}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件和头文件\TrafficMonitorDlg">
+    <Filter Include="源文件和头文件\TaskbarCore">
       <UniqueIdentifier>{22456594-86cd-4c0e-8ab9-e45cc6d78121}</UniqueIdentifier>
     </Filter>
     <Filter Include="源文件和头文件\stdafx">
@@ -277,8 +277,8 @@
     <ClInclude Include="TrafficMonitor.h">
       <Filter>源文件和头文件\TrafficMonitor</Filter>
     </ClInclude>
-    <ClInclude Include="TrafficMonitorDlg.h">
-      <Filter>源文件和头文件\TrafficMonitorDlg</Filter>
+    <ClInclude Include="TaskbarCore.h">
+      <Filter>源文件和头文件\TaskbarCore</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>源文件和头文件\stdafx</Filter>
@@ -576,8 +576,8 @@
     <ClCompile Include="TrafficMonitor.cpp">
       <Filter>源文件和头文件\TrafficMonitor</Filter>
     </ClCompile>
-    <ClCompile Include="TrafficMonitorDlg.cpp">
-      <Filter>源文件和头文件\TrafficMonitorDlg</Filter>
+    <ClCompile Include="TaskbarCore.cpp">
+      <Filter>源文件和头文件\TaskbarCore</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件和头文件\stdafx</Filter>

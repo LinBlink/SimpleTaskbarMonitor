@@ -8,7 +8,7 @@
 #include "CMFCColorDialogEx.h"
 #include "DisplayTextSettingDlg.h"
 #include "FileDialogEx.h"
-#include "TrafficMonitorDlg.h"
+#include "TaskbarCore.h"
 #include "SkinManager.h"
 
 // CMainWndSettingsDlg 对话框
@@ -594,7 +594,7 @@ void CMainWndSettingsDlg::OnBnClickedAlowOutOfBorderCheck()
 void CMainWndSettingsDlg::OnBnClickedResotreSkinDefaultButton()
 {
     SkinSettingData skin_setting_data;
-    CTrafficMonitorDlg* pMainWnd = CTrafficMonitorDlg::Instance();
+    CTaskbarCore* pMainWnd = CTaskbarCore::Instance();
     if (pMainWnd != nullptr)
     {
         CSkinManager::SkinSettingDataFronSkin(skin_setting_data, pMainWnd->GetCurSkin());

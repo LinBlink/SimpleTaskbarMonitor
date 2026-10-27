@@ -862,7 +862,7 @@
     <ClInclude Include="TinyXml2Helper.h" />
     <ClInclude Include="tinyxml2\tinyxml2.h" />
     <ClInclude Include="TrafficMonitor.h" />
-    <ClInclude Include="TrafficMonitorDlg.h" />
+    <ClInclude Include="TaskbarCore.h" />
     <ClInclude Include="UpdateHelper.h" />
     <ClInclude Include="WIC.h" />
     <ClInclude Include="Win11TaskbarDlg.h" />
@@ -984,7 +984,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release (lite)|ARM64EC'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TrafficMonitor.cpp" />
-    <ClCompile Include="TrafficMonitorDlg.cpp" />
+    <ClCompile Include="TaskbarCore.cpp" />
     <ClCompile Include="UpdateHelper.cpp" />
     <ClCompile Include="WIC.cpp" />
     <ClCompile Include="Win11TaskbarDlg.cpp" />

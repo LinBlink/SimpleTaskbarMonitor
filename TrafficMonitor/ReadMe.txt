@@ -33,8 +33,8 @@ res\TrafficMonitor.rc2
 
 应用程序向导创建一个对话框类：
 
-TrafficMonitorDlg.h、TrafficMonitorDlg.cpp - 对话框
-    这些文件包含 CTrafficMonitorDlg 类。此类定义应用程序的主对话框的行为。对话框模板包含在 TrafficMonitor.rc 中，该文件可以在 Microsoft Visual C++ 中编辑。
+TaskbarCore.h、TaskbarCore.cpp - 任务栏核心
+    这些文件包含 CTaskbarCore 类。此类承载任务栏窗口、监控数据采集与通知区图标等核心逻辑。对话框模板包含在 TrafficMonitor.rc 中，该文件可以在 Microsoft Visual C++ 中编辑。
 
 /////////////////////////////////////////////////////////////////////////////
 

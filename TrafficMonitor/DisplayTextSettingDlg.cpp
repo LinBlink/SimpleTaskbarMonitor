@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "TrafficMonitor.h"
 #include "DisplayTextSettingDlg.h"
-#include "TrafficMonitorDlg.h"
+#include "TaskbarCore.h"
 #include "SkinManager.h"
 
 
@@ -68,7 +68,7 @@ BOOL CDisplayTextSettingDlg::OnInitDialog()
     if (m_main_window_text)
     {
         std::set<CommonDisplayItem> all_skin_items;
-        CTrafficMonitorDlg::Instance()->GetCurSkin().GetSkinDisplayItems(all_skin_items);
+        CTaskbarCore::Instance()->GetCurSkin().GetSkinDisplayItems(all_skin_items);
 
         DispStrings temp = m_display_texts;
         m_display_texts = DispStrings();
@@ -126,7 +126,7 @@ void CDisplayTextSettingDlg::OnBnClickedRestoreDefaultButton()
 {
     // TODO: 在此添加控件通知处理程序代码
     int item_count = m_list_ctrl.GetItemCount();
-    CTrafficMonitorDlg* pMainWnd = CTrafficMonitorDlg::Instance();
+    CTaskbarCore* pMainWnd = CTaskbarCore::Instance();
     if (m_main_window_text && pMainWnd != nullptr)
     {
         //主窗口恢复默认显示文本时，从皮肤获取
@@ -154,7 +154,7 @@ void CDisplayTextSettingDlg::OnRestoreDefault()
 {
     if (m_item_selected >= 0)
     {
-        CTrafficMonitorDlg* pMainWnd = CTrafficMonitorDlg::Instance();
+        CTaskbarCore* pMainWnd = CTaskbarCore::Instance();
         if (m_main_window_text && pMainWnd != nullptr)
         {
             //主窗口恢复默认显示文本时，从皮肤获取

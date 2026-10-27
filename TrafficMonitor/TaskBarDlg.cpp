@@ -5,7 +5,7 @@
 #include "TrafficMonitor.h"
 #include "TaskBarDlg.h"
 #include "afxdialogex.h"
-#include "TrafficMonitorDlg.h"
+#include "TaskbarCore.h"
 #include "WindowsSettingHelper.h"
 #include "WIC.h"
 #include "Nullable.hpp"
@@ -690,7 +690,7 @@ CString CTaskBarDlg::GetMouseTipsInfo()
     }
 
 #ifndef WITHOUT_TEMPERATURE
-    CTrafficMonitorDlg* pMainWnd = dynamic_cast<CTrafficMonitorDlg*>(theApp.m_pMainWnd);
+    CTaskbarCore* pMainWnd = dynamic_cast<CTaskbarCore*>(theApp.m_pMainWnd);
     if (pMainWnd->IsTemperatureNeeded())
     {
         if (!IsItemShow(TDI_CPU_TEMP) && theApp.m_cpu_temperature > 0)
