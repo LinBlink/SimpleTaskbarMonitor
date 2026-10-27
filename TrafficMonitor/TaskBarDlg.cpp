@@ -13,6 +13,13 @@
 #include "WindowsWebExperienceDetector.h"
 #include "TaskbarHelper.h"
 #include "Builtin/BuiltinFeatures.h"
+#include "Builtin/AIUsageLayout.h"
+
+static AIUsageLayout::Layout MeasureAIColumns(CDC* dc, const wchar_t* id, int gap)
+{
+    return AIUsageLayout::MeasureColumns(AIUsageLayout::ColumnCount(id),
+        [dc](const std::wstring& text) { return static_cast<int>(dc->GetTextExtent(text.c_str()).cx); }, gap);
+}
 
 #ifdef DEBUG
 // DX调试信息捕获
@@ -425,7 +432,27 @@ void CTaskBarDlg::DrawPluginItem(IDrawCommon& drawer, IPluginItem* item, CRect r
         IDrawCommon::Alignment value_alignment{ theApp.m_taskbar_data.value_right_align ? IDrawCommon::Alignment::RIGHT : IDrawCommon::Alignment::LEFT };      //数值的对齐方式
         if (vertical)
             value_alignment = IDrawCommon::Alignment::CENTER;
-        drawer.DrawWindowText(rect_value, item->GetItemValueText(), value_text_color, value_alignment);
+        if (AIUsageLayout::ColumnCount(item->GetItemId()))
+        {
+            const auto layout = MeasureAIColumns(m_pDC, item->GetItemId(), DPI(2));
+            const auto values = AIUsageLayout::Split(item->GetItemValueText());
+            // Anchor the entire table once; individual numbers have fixed right edges.
+            int left = rect_value.left;
+            if (vertical) left += (rect_value.Width() - layout.width) / 2;
+            else if (theApp.m_taskbar_data.value_right_align) left = rect_value.right - layout.width;
+            for (int i = 0; i < layout.count; ++i)
+            {
+                const auto& col = layout.columns[i];
+                CRect cell{left + col.left, rect_value.top, left + col.left + col.width, rect_value.bottom};
+                drawer.DrawWindowText(cell, values[i].text.c_str(), value_text_color, IDrawCommon::Alignment::RIGHT);
+                cell.left = cell.right; cell.right += col.marker;
+                if (values[i].stale) drawer.DrawWindowText(cell, L"*", value_text_color);
+                cell.left = cell.right; cell.right += col.separator;
+                if (i + 1 < layout.count) drawer.DrawWindowText(cell, L",", value_text_color);
+            }
+        }
+        else
+            drawer.DrawWindowText(rect_value, item->GetItemValueText(), value_text_color, value_alignment);
     }
 }
 
@@ -767,6 +794,11 @@ void CTaskBarDlg::CalculateWindowSize()
     std::map<CommonDisplayItem, ItemWidth> item_widths;
 
     m_pDC->SelectObject(&m_font);
+    // Use the same label width for all AI providers, including custom labels.
+    int ai_label_width = 0;
+    for (int i = 0; auto item = Builtin::AIUsage()->GetItem(i); ++i)
+        ai_label_width = max(ai_label_width, m_pDC->GetTextExtent(theApp.m_taskbar_data.disp_str.GetConst(item).c_str()).cx);
+    if (ai_label_width > 0) ai_label_width += DPI(2);
     //计算标签和数值的宽度
     //const auto& item_map = theApp.m_taskbar_data.disp_str.GetAllItems();
     for (auto iter = theApp.m_plugins.AllDisplayItemsWithPlugins().begin(); iter != theApp.m_plugins.AllDisplayItemsWithPlugins().end(); ++iter)
@@ -790,6 +822,11 @@ void CTaskBarDlg::CalculateWindowSize()
                     CString lable_text = theApp.m_taskbar_data.disp_str.GetConst(plugin).c_str();
                     label_width = m_pDC->GetTextExtent(lable_text).cx;
                     value_width = m_pDC->GetTextExtent(plugin->GetItemValueSampleText()).cx;
+                    if (AIUsageLayout::ColumnCount(plugin->GetItemId()))
+                    {
+                        label_width = ai_label_width;
+                        value_width = MeasureAIColumns(m_pDC, plugin->GetItemId(), DPI(2)).width;
+                    }
                 }
             }
         }

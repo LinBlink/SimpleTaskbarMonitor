@@ -8,7 +8,23 @@
 #include "../TrafficMonitor/Builtin/ResetHours.h"
 #include "../TrafficMonitor/Builtin/GroupedUsage.h"
 #include "../TrafficMonitor/Builtin/ResetAlert.h"
+#include "../TrafficMonitor/Builtin/AIUsageLayout.h"
 int main() {
+    auto measure=[](const std::wstring& text) { return static_cast<int>(text.size()*8); };
+    auto layout=AIUsageLayout::MeasureColumns(4,measure,2);
+    assert(AIUsageLayout::ColumnCount(L"AIUsageCodexSummary")==4);
+    assert(AIUsageLayout::ColumnCount(L"AIUsageCursorSummary")==2);
+    assert(AIUsageLayout::ColumnCount(L"BatteryPowerMon")==0);
+    for(int i=0;i<4;++i) {
+        assert(layout.columns[i].width >= measure(i==3?L"168.0h":i==1?L"99.9h":L"100%"));
+        if(i) assert(layout.columns[i].left==layout.columns[i-1].left+layout.columns[i-1].width+layout.columns[i-1].marker+layout.columns[i-1].separator);
+    }
+    auto fields=AIUsageLayout::Split(L"17%,3.1h,54%*,100.1h*");
+    assert(fields[0].text==L"17%" && !fields[0].stale);
+    assert(fields[2].text==L"54%" && fields[2].stale);
+    assert(fields[3].text==L"100.1h" && fields[3].stale);
+    fields=AIUsageLayout::Split(L"--,--,--,--");
+    for(auto& field:fields) assert(field.text==L"--" && !field.stale);
     Builtin::ResetAlert alert, other;
     alert.Observe(90,100,0); // Expired startup cache: no alert.
     assert(!alert.Highlight(0));
