@@ -6,6 +6,7 @@
 #pragma comment (lib, "iphlpapi.lib")
 
 #include "afxwin.h"
+#include <atomic>
 #include "Common.h"
 #include "TaskBarDlg.h"
 #include "OptionsDlg.h"
@@ -98,8 +99,9 @@ protected:
 
     void DoMonitorAcquisition();    //获取一次监控信息
     static UINT MonitorThreadCallback(LPVOID dwUser);   //获取监控信息的线程函数
-    bool m_monitor_data_required{ false };          //线程中需要获取监控数据标志，当需要获取监控数据时置为true，获取到一次监控数据时置为false
-    bool m_is_thread_exit{ false }; //线程退出标志
+    std::atomic_bool m_monitor_data_required{ false };          //线程中需要获取监控数据标志，当需要获取监控数据时置为true，获取到一次监控数据时置为false
+    bool m_monitor_thread_started{ false };
+    std::atomic_bool m_is_thread_exit{ false }; //线程退出标志
     CEvent m_threadExitEvent;       //用于通知主线程工作线程已退出
 public:
     void ExitMonitorThread();       //停止监控线程
@@ -155,7 +157,6 @@ protected:
 public:
     afx_msg void OnShowNotifyIcon();
     afx_msg void OnDestroy();
-    afx_msg void OnShowTaskBarWnd();
     afx_msg void OnAppAbout();
     afx_msg void OnShowCpuMemory2();
     afx_msg LRESULT OnTaskBarCreated(WPARAM wParam, LPARAM lParam);
@@ -172,7 +173,6 @@ public:
     afx_msg BOOL OnQueryEndSession();
 protected:
     afx_msg LRESULT OnDpichanged(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnTaskbarWndClosed(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnMonitorInfoUpdated(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnDisplaychange(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnReopenTaksbarWnd(WPARAM wParam, LPARAM lParam);

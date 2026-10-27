@@ -87,7 +87,6 @@ void CTrafficMonitorApp::LoadConfig()
 
     //任务栏窗口设置
     m_general_data.show_notify_icon = ini.GetBool(_T("config"), _T("show_notify_icon"), true);
-    m_cfg_data.m_show_task_bar_wnd = ini.GetBool(_T("config"), _T("show_task_bar_wnd"), false);
     m_cfg_data.m_auto_select = ini.GetBool(_T("connection"), _T("auto_select"), true);
     m_cfg_data.m_select_all = ini.GetBool(_T("connection"), _T("select_all"), false);
     m_cfg_data.m_connection_name = CCommon::UnicodeToStr(ini.GetString(L"connection", L"connection_name", L"").c_str());
@@ -255,7 +254,6 @@ void CTrafficMonitorApp::SaveConfig()
 
     //任务栏窗口设置
     ini.WriteBool(L"config", L"show_notify_icon", m_general_data.show_notify_icon);
-    ini.WriteBool(L"config", L"show_task_bar_wnd", m_cfg_data.m_show_task_bar_wnd);
     ini.WriteBool(L"connection", L"auto_select", m_cfg_data.m_auto_select);
     ini.WriteBool(L"connection", L"select_all", m_cfg_data.m_select_all);
     ini.WriteString(L"connection", L"connection_name", CCommon::StrToUnicode(m_cfg_data.m_connection_name.c_str()));
@@ -621,11 +619,10 @@ void CTrafficMonitorApp::InitMenuResourse()
     {
         CMenuIcon::AddIconToMenuItem(menu.GetSubMenu(0)->GetSafeHmenu(), 0, TRUE, GetMenuIcon(IDI_CONNECTION));
         CMenuIcon::AddIconToMenuItem(menu.GetSafeHmenu(), ID_DISPLAY_SETTINGS, FALSE, GetMenuIcon(IDI_ITEM));
-        CMenuIcon::AddIconToMenuItem(menu.GetSafeHmenu(), ID_SHOW_TASK_BAR_WND, FALSE, GetMenuIcon(IDI_CLOSE));
         CMenuIcon::AddIconToMenuItem(menu.GetSafeHmenu(), ID_OPEN_TASK_MANAGER, FALSE, GetMenuIcon(IDI_TASK_MANAGER));
         CMenuIcon::AddIconToMenuItem(menu.GetSafeHmenu(), ID_OPTIONS2, FALSE, GetMenuIcon(IDI_SETTINGS));
         CMenuIcon::AddIconToMenuItem(menu.GetSafeHmenu(), ID_PLUGIN_MANAGE, FALSE, GetMenuIcon(IDI_PLUGINS));
-        CMenuIcon::AddIconToMenuItem(menu.GetSubMenu(0)->GetSafeHmenu(), 9, TRUE, GetMenuIcon(IDI_HELP));
+        CMenuIcon::AddIconToMenuItem(menu.GetSubMenu(0)->GetSafeHmenu(), 8, TRUE, GetMenuIcon(IDI_HELP));
         CMenuIcon::AddIconToMenuItem(menu.GetSafeHmenu(), ID_HELP, FALSE, GetMenuIcon(IDI_HELP));
         CMenuIcon::AddIconToMenuItem(menu.GetSafeHmenu(), ID_APP_ABOUT, FALSE, GetMenuIcon(IDR_MAINFRAME));
         CMenuIcon::AddIconToMenuItem(menu.GetSafeHmenu(), ID_APP_EXIT, FALSE, GetMenuIcon(IDI_EXIT));
@@ -951,8 +948,8 @@ void CTrafficMonitorApp::UpdateOpenHardwareMonitorEnableState()
 
 bool CTrafficMonitorApp::IsForceShowNotifyIcon()
 {
-    //如果没有显示任务栏窗口，则强制显示通知区图标，否则用户将无法访问程序的菜单
-    return !m_cfg_data.m_show_task_bar_wnd;
+    auto core = CTaskbarCore::Instance();
+    return core == nullptr || !core->IsTaskbarWndValid();
 }
 
 std::wstring CTrafficMonitorApp::GetPlauginTooltipInfo() const

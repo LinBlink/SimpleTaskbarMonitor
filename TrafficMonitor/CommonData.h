@@ -139,7 +139,6 @@ struct LanguageInfo
 //选项设置数据
 struct MainConfigData
 {
-    bool m_show_task_bar_wnd{ false };  //显示任务栏窗口
 
     bool m_auto_select{ false };    //自动选择连接
     bool m_select_all{ false };     //统计所有连接的网速

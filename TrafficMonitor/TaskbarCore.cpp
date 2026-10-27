@@ -88,7 +88,6 @@ BEGIN_MESSAGE_MAP(CTaskbarCore, CDialog)
     ON_WM_DESTROY()
     ON_MESSAGE(MY_WM_NOTIFYICON, &CTaskbarCore::OnNotifyIcon)
     ON_COMMAND(ID_SHOW_NOTIFY_ICON, &CTaskbarCore::OnShowNotifyIcon)
-    ON_COMMAND(ID_SHOW_TASK_BAR_WND, &CTaskbarCore::OnShowTaskBarWnd)
     ON_COMMAND(ID_APP_ABOUT, &CTaskbarCore::OnAppAbout)
     ON_COMMAND(ID_SHOW_CPU_MEMORY2, &CTaskbarCore::OnShowCpuMemory2)
     ON_REGISTERED_MESSAGE(m_WM_TASKBARCREATED, &CTaskbarCore::OnTaskBarCreated)
@@ -100,7 +99,6 @@ BEGIN_MESSAGE_MAP(CTaskbarCore, CDialog)
     ON_COMMAND(ID_SHOW_NET_SPEED, &CTaskbarCore::OnShowNetSpeed)
     ON_WM_QUERYENDSESSION()
     ON_MESSAGE(WM_DPICHANGED, &CTaskbarCore::OnDpichanged)
-    ON_MESSAGE(WM_TASKBAR_WND_CLOSED, &CTaskbarCore::OnTaskbarWndClosed)
     ON_MESSAGE(WM_MONITOR_INFO_UPDATED, &CTaskbarCore::OnMonitorInfoUpdated)
     ON_MESSAGE(WM_DISPLAYCHANGE, &CTaskbarCore::OnDisplaychange)
     ON_COMMAND(ID_PLUGIN_MANAGE, &CTaskbarCore::OnPluginManage)
@@ -365,21 +363,21 @@ void CTaskbarCore::OpenTaskBarWnd()
 
 void CTaskbarCore::AddNotifyIcon()
 {
-    if (theApp.m_cfg_data.m_show_task_bar_wnd)
+    const bool reopen = IsTaskbarWndValid();
+    if (reopen)
         CloseTaskBarWnd();
-    //添加通知栏图标
     ::Shell_NotifyIcon(NIM_ADD, &m_ntIcon);
-    if (theApp.m_cfg_data.m_show_task_bar_wnd)
+    if (reopen)
         OpenTaskBarWnd();
 }
 
 void CTaskbarCore::DeleteNotifyIcon()
 {
-    if (theApp.m_cfg_data.m_show_task_bar_wnd)
+    const bool reopen = IsTaskbarWndValid();
+    if (reopen)
         CloseTaskBarWnd();
-    //删除通知栏图标
     ::Shell_NotifyIcon(NIM_DELETE, &m_ntIcon);
-    if (theApp.m_cfg_data.m_show_task_bar_wnd)
+    if (reopen)
         OpenTaskBarWnd();
 }
 
@@ -587,31 +585,6 @@ void CTaskbarCore::TaskbarShowHideItem(DisplayItem type)
 
 bool CTaskbarCore::IsTemperatureNeeded() const
 {
-    //判断是否需要从OpenHardwareMonitor获取信息。
-    ////只有主窗口和任务栏窗口中CPU温度、显卡利用率、显卡温度、硬盘温度和主板温度中至少有一个要显示，才返回true
-    //bool needed = false;
-    //if (theApp.m_cfg_data.m_show_task_bar_wnd && IsTaskbarWndValid())
-    //{
-    //    needed |= m_tBarDlg->IsShowCpuTemperature();
-    //    needed |= m_tBarDlg->IsShowGpu();
-    //    needed |= m_tBarDlg->IsShowGpuTemperature();
-    //    needed |= m_tBarDlg->IsShowHddTemperature();
-    //    needed |= m_tBarDlg->IsShowMainboardTemperature();
-    //    needed |= (::IsWindow(m_tBarDlg->m_tool_tips.GetSafeHwnd()) && m_tBarDlg->m_tool_tips.IsWindowVisible());
-    //}
-
-    //if (!theApp.m_cfg_data.m_hide_main_window)
-    //{
-    //    const CSkinFile::Layout& skin_layout{ theApp.m_cfg_data.m_show_more_info ? m_skin.GetLayoutInfo().layout_l : m_skin.GetLayoutInfo().layout_s }; //当前的皮肤布局
-    //    needed |= skin_layout.GetItem(TDI_CPU_TEMP).show;
-    //    needed |= skin_layout.GetItem(TDI_GPU_USAGE).show;
-    //    needed |= skin_layout.GetItem(TDI_GPU_TEMP).show;
-    //    needed |= skin_layout.GetItem(TDI_HDD_TEMP).show;
-    //    needed |= skin_layout.GetItem(TDI_MAIN_BOARD_TEMP).show;
-    //    needed |= (::IsWindow(m_tool_tips.GetSafeHwnd()) && m_tool_tips.IsWindowVisible());
-    //}
-    //return needed;
-
     return theApp.m_general_data.IsHardwareEnable(HI_CPU) || theApp.m_general_data.IsHardwareEnable(HI_GPU)
         || theApp.m_general_data.IsHardwareEnable(HI_HDD) || theApp.m_general_data.IsHardwareEnable(HI_MBD);
 }
@@ -655,10 +628,6 @@ BOOL CTaskbarCore::OnInitDialog()
 
     IniConnection();    //初始化连接
 
-    //如果任务栏窗口没有显示，则强制显示通知区图标，否则用户将无法呼出程序的菜单
-    if (theApp.IsForceShowNotifyIcon())
-        theApp.m_general_data.show_notify_icon = true;
-
     //载入通知区图标
     theApp.m_notify_icons[0] = (HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_NOFITY_ICON), IMAGE_ICON, theApp.DPI(16), theApp.DPI(16), LR_DEFAULTCOLOR | LR_CREATEDIBSECTION);
     theApp.m_notify_icons[1] = (HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_NOFITY_ICON2), IMAGE_ICON, theApp.DPI(16), theApp.DPI(16), LR_DEFAULTCOLOR | LR_CREATEDIBSECTION);
@@ -689,7 +658,7 @@ BOOL CTaskbarCore::OnInitDialog()
     SetTimer(MAIN_TIMER, 1000, NULL);
 
     SetTimer(MONITOR_TIMER, theApp.m_general_data.monitor_time_span, NULL);
-    AfxBeginThread(MonitorThreadCallback, (LPVOID)this);
+    m_monitor_thread_started = (AfxBeginThread(MonitorThreadCallback, (LPVOID)this) != nullptr);
 
     //获取启动时的时间
     GetLocalTime(&m_start_time);
@@ -1055,7 +1024,7 @@ void CTaskbarCore::DoMonitorAcquisition()
     m_monitor_time_cnt++;
 
     //发送监控信息更新消息
-    SendMessage(WM_MONITOR_INFO_UPDATED);
+    PostMessage(WM_MONITOR_INFO_UPDATED);
 }
 
 UINT CTaskbarCore::MonitorThreadCallback(LPVOID dwUser)
@@ -1094,7 +1063,11 @@ void CTaskbarCore::ExitMonitorThread()
     m_is_thread_exit = true;
 
     // 等待线程退出
-    ::WaitForSingleObject(m_threadExitEvent.m_hObject, 1000);
+    if (m_monitor_thread_started)
+    {
+        ::WaitForSingleObject(m_threadExitEvent.m_hObject, INFINITE);
+        m_monitor_thread_started = false;
+    }
 }
 
 
@@ -1113,7 +1086,7 @@ void CTaskbarCore::OnTimer(UINT_PTR nIDEvent)
         if (m_first_start)      //这个if语句在程序启动后1秒执行
         {
             //打开任务栏窗口
-            if (theApp.m_cfg_data.m_show_task_bar_wnd && m_tBarDlg == nullptr)
+            if (m_tBarDlg == nullptr)
                 OpenTaskBarWnd();
 
             m_first_start = false;
@@ -1355,7 +1328,7 @@ void CTaskbarCore::OnTimer(UINT_PTR nIDEvent)
     if (nIDEvent == TASKBAR_TIMER)
     {
         ++m_taskbar_timer_cnt;
-        if (m_taskbar_timer_cnt % 5 == 0 && theApp.m_cfg_data.m_show_task_bar_wnd && theApp.m_taskbar_data.show_taskbar_wnd_in_secondary_display)
+        if (m_taskbar_timer_cnt % 5 == 0 && theApp.m_taskbar_data.show_taskbar_wnd_in_secondary_display)
         {
             static int last_taskbar_num = 0;
             int taskbar_num = CTaskbarHelper::GetSecondaryTaskbarNum();
@@ -1411,26 +1384,14 @@ void CTaskbarCore::OnClose()
 {
     theApp.m_cannot_save_config_warning = true;
     theApp.m_cannot_save_global_config_warning = true;
-    theApp.SaveConfig();    //退出前保存设置到ini文件
+    theApp.SaveConfig();
     theApp.SaveGlobalConfig();
 
-    if (IsTaskbarWndValid())
-        m_tBarDlg->OnCancel();
-
-    //确保在退出前关闭所有窗口
     for (const auto& item : CBaseDialog::AllUniqueHandels())
-    {
         ::SendMessage(item.second, WM_COMMAND, IDCANCEL, 0);
-    }
 
-    //清理通知区图标和监控线程，避免退出后在通知区残留图标
-    DeleteNotifyIcon();
-    ExitMonitorThread();
-
-    //退出应用程序的消息循环
-    ::PostQuitMessage(0);
-
-    CDialog::OnClose();
+    // The core is modeless: destroy it instead of calling EndDialog.
+    DestroyWindow();
 }
 
 
@@ -1507,7 +1468,7 @@ afx_msg LRESULT CTaskbarCore::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
         }
         else        //没有打开的对话框时，则显示任务栏窗口
         {
-            if (theApp.m_cfg_data.m_show_task_bar_wnd && !IsTaskbarWndValid())
+            if (!IsTaskbarWndValid())
             {
                 OpenTaskBarWnd();
             }
@@ -1559,13 +1520,15 @@ void CTaskbarCore::OnShowNotifyIcon()
 
 void CTaskbarCore::OnDestroy()
 {
-    CDialog::OnDestroy();
-
-    //程序退出时删除通知栏图标
-    ::Shell_NotifyIcon(NIM_DELETE, &m_ntIcon);
-
-    // 停止监控线程
+    KillTimer(MAIN_TIMER);
+    KillTimer(MONITOR_TIMER);
+    KillTimer(TASKBAR_TIMER);
     ExitMonitorThread();
+    CloseTaskBarWnd();
+    // Do not use DeleteNotifyIcon here: it recreates the taskbar window.
+    ::Shell_NotifyIcon(NIM_DELETE, &m_ntIcon);
+    CDialog::OnDestroy();
+    ::PostQuitMessage(0);
 }
 
 
@@ -1597,31 +1560,6 @@ void CTaskbarCore::OnShowCpuMemory2()
 }
 
 
-
-
-void CTaskbarCore::OnShowTaskBarWnd()
-{
-    if (m_tBarDlg != nullptr)
-    {
-        CloseTaskBarWnd();
-    }
-    if (!theApp.m_cfg_data.m_show_task_bar_wnd)
-    {
-        theApp.m_cfg_data.m_show_task_bar_wnd = true;
-        OpenTaskBarWnd();
-    }
-    else
-    {
-        theApp.m_cfg_data.m_show_task_bar_wnd = false;
-        //关闭任务栏窗口后，如果没有显示通知区图标，则将通知区图标显示出来，否则用户将无法访问程序的菜单
-        if (!theApp.m_general_data.show_notify_icon && theApp.IsForceShowNotifyIcon())
-        {
-            AddNotifyIcon();
-            theApp.m_general_data.show_notify_icon = true;
-        }
-    }
-    theApp.SaveConfig();
-}
 
 
 void CTaskbarCore::OnAppAbout()
@@ -1669,7 +1607,7 @@ void CTaskbarCore::OnOptions2()
     CWnd* pParent = this;
     if (IsTaskbarWndValid())
         pParent = m_tBarDlg;
-    _OnOptions(1, pParent);
+    _OnOptions(0, pParent);
 }
 
 
@@ -1783,20 +1721,6 @@ afx_msg LRESULT CTaskbarCore::OnDpichanged(WPARAM wParam, LPARAM lParam)
 
     return 0;
 }
-
-
-afx_msg LRESULT CTaskbarCore::OnTaskbarWndClosed(WPARAM wParam, LPARAM lParam)
-{
-    theApp.m_cfg_data.m_show_task_bar_wnd = false;
-    //关闭任务栏窗口后，如果没有显示通知区图标，且没有显示主窗口或设置了鼠标穿透，则将通知区图标显示出来
-    if (!theApp.m_general_data.show_notify_icon && theApp.IsForceShowNotifyIcon())
-    {
-        AddNotifyIcon();
-        theApp.m_general_data.show_notify_icon = true;
-    }
-    return 0;
-}
-
 
 
 afx_msg LRESULT CTaskbarCore::OnMonitorInfoUpdated(WPARAM wParam, LPARAM lParam)

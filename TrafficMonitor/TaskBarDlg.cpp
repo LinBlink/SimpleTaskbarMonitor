@@ -1427,10 +1427,8 @@ void CTaskBarDlg::TryDrawGraph(IDrawCommon& drawer, const CRect& value_rect, Com
 
 void CTaskBarDlg::OnClose()
 {
-    // TODO: 在此添加消息处理程序代码和/或调用默认值
-    ::SendMessage(theApp.m_pMainWnd->GetSafeHwnd(), WM_TASKBAR_WND_CLOSED, 0, 0);
-
-    CDialogEx::OnClose();
+    // Closing the only display surface exits the application.
+    theApp.m_pMainWnd->PostMessage(WM_CLOSE);
 }
 
 void CTaskBarDlg::OnLButtonUp(UINT nFlags, CPoint point)
