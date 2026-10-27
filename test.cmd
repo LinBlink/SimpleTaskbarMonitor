@@ -25,4 +25,6 @@ if errorlevel 1 exit /b 1
 powershell -NoProfile -ExecutionPolicy Bypass -File build.ps1 -Configuration "Debug (lite)"
 if errorlevel 1 exit /b 1
 python tests\taskbar_smoke.py "artifacts\build\x64\Debug (lite)\TrafficMonitor.exe"
+if errorlevel 1 exit /b 1
+python tests\reset_alert_smoke.py "artifacts\build\x64\Debug (lite)\TrafficMonitor.exe"
 exit /b %errorlevel%

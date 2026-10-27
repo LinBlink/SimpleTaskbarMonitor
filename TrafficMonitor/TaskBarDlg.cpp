@@ -12,6 +12,7 @@
 #include "DrawCommonFactory.h"
 #include "WindowsWebExperienceDetector.h"
 #include "TaskbarHelper.h"
+#include "Builtin/BuiltinFeatures.h"
 
 #ifdef DEBUG
 // DX调试信息捕获
@@ -317,6 +318,14 @@ void CTaskBarDlg::DrawPluginItem(IDrawCommon& drawer, IPluginItem* item, CRect r
 {
     if (item == nullptr)
         return;
+
+    // Fill only this AI item; both GDI and D2D keep the configured text colors.
+    if (Builtin::IsAIResetHighlighted(item, GetTickCount64()))
+    {
+        const auto background = theApp.m_taskbar_data.back_color;
+        const bool dark = GetRValue(background) + GetGValue(background) + GetBValue(background) < 384;
+        drawer.FillRect(rect, dark ? RGB(120, 65, 0) : RGB(255, 205, 90));
+    }
 
     //绘制资源占用图
     ITMPlugin* plugin = theApp.m_plugins.GetPluginByItem(item);

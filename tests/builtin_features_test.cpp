@@ -7,7 +7,30 @@
 #include "../TrafficMonitor/Builtin/DateMath.h"
 #include "../TrafficMonitor/Builtin/ResetHours.h"
 #include "../TrafficMonitor/Builtin/GroupedUsage.h"
+#include "../TrafficMonitor/Builtin/ResetAlert.h"
 int main() {
+    Builtin::ResetAlert alert, other;
+    alert.Observe(90,100,0); // Expired startup cache: no alert.
+    assert(!alert.Highlight(0));
+    alert.Observe(110,100,10);
+    assert(!alert.Highlight(10));
+    alert.Observe(200,110,1000); // Refresher already advanced to the next window.
+    assert(alert.Highlight(1000));
+    assert(!alert.Highlight(1500));
+    assert(alert.Highlight(2000));
+    assert(!other.Highlight(2000)); // Providers have independent state.
+    assert(!alert.Highlight(31000));
+    alert.Observe(110,111,32000); // Repeated stale deadline must not re-trigger.
+    assert(!alert.Highlight(32000));
+    alert.Observe(200,200,40000);
+    assert(alert.Highlight(40000)); // The next 5h cycle can alert again.
+    Builtin::ResetAlert corrected;
+    corrected.Observe(110,100,0);
+    corrected.Observe(120,105,1); // Future deadline correction is not a reset.
+    corrected.Observe(120,110,2);
+    assert(!corrected.Highlight(2));
+    corrected.Observe(0,120,3); // A temporary query failure preserves the armed deadline.
+    assert(corrected.Highlight(3));
     const auto directory=Builtin::DataDirectory();
     // Isolated beside this test executable; never use installed account settings.
     WritePrivateProfileStringW(L"settings",L"EnableQueries",L"0",(directory+L"\\AIUsage.ini").c_str());
@@ -22,6 +45,8 @@ int main() {
     auto features=Builtin::Features();assert(features.size()==4);
     std::set<std::wstring> ids;
     for(auto feature:features) for(int i=0;auto item=feature->GetItem(i);++i) assert(ids.insert(item->GetItemId()).second);
+    assert(!Builtin::IsAIResetHighlighted(nullptr,GetTickCount64()));
+    assert(!Builtin::IsAIResetHighlighted(Builtin::Power()->GetItem(0),GetTickCount64()));
     assert(ids.size()==11);assert(ids.count(L"AIUsageCodexSummary"));assert(ids.count(L"CustomDualCountdown"));assert(ids.count(L"b5R30ITQ"));assert(ids.count(L"BatteryPowerMon"));
     for(auto feature:features) feature->DataRequired();
     assert(std::wstring(Builtin::AIUsage()->GetItem(1)->GetItemValueText())==L"0%,--,--,--");

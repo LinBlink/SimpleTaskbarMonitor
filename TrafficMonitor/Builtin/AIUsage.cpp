@@ -6,6 +6,7 @@
 #include "BuiltinFeatures.h"
 #include "ResetHours.h"
 #include "GroupedUsage.h"
+#include "ResetAlert.h"
 
 namespace {
 static std::wstring directory() { return Builtin::DataDirectory(); }
@@ -19,6 +20,7 @@ class Item : public IPluginItem {
 public:
     const wchar_t *name, *id, *label;
     std::wstring value=L"--";
+    Builtin::ResetAlert resetAlert;
     Item(const wchar_t* n,const wchar_t* i,const wchar_t* l):name(n),id(i),label(l){}
     const wchar_t* GetItemName() const override { return name; }
     const wchar_t* GetItemId() const override { return id; }
@@ -72,6 +74,9 @@ public:
             tooltip+=std::wstring(names[i])+L": "+GroupedUsage::Percent(window,epoch)+L"，重置剩余 "+
                 GroupedUsage::Reset(window,epoch,i==4)+L"  "+window.status+L"\n";
         }
+        items[0].resetAlert.Observe(windows[0].reset,epoch,now);
+        items[1].resetAlert.Observe(windows[2].reset,epoch,now);
+        items[3].resetAlert.Observe(windows[5].reset,epoch,now);
         items[0].value=GroupedUsage::Summary(windows[0],windows[1],epoch);
         items[1].value=GroupedUsage::Summary(windows[2],windows[3],epoch);
         items[2].value=GroupedUsage::Percent(windows[4],epoch)+L","+GroupedUsage::Reset(windows[4],epoch,true);
@@ -106,3 +111,11 @@ public:
 };
 }
 ITMPlugin* Builtin::AIUsage() { static Plugin feature; return &feature; }
+
+bool Builtin::IsAIResetHighlighted(const IPluginItem* item, unsigned long long tick) {
+    auto feature=AIUsage();
+    for(int i=0;i<4;++i)
+        if(feature->GetItem(i)==item)
+            return static_cast<const Item*>(item)->resetAlert.Highlight(tick);
+    return false;
+}
