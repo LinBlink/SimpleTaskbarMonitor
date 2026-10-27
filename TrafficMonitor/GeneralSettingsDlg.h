@@ -33,7 +33,6 @@ protected:
     bool m_auto_run_modified{ false };      //如果更改了开机自动运行的设置，则会置为true
     bool m_show_all_interface_modified{ false };
     int m_monitor_time_span_ori{};
-    int m_update_source_ori{};
     //bool m_taskbar_item_modified{ false };
     wstring m_auto_run_path;
 
@@ -73,7 +72,6 @@ protected:
 public:
     virtual BOOL OnInitDialog();
     afx_msg void OnBnClickedCheckNowButton();
-    afx_msg void OnBnClickedCheckUpdateCheck();
     afx_msg void OnBnClickedAutoRunCheck();
     virtual void OnOK();
     afx_msg void OnBnClickedTodayTrafficTipCheck();
@@ -89,8 +87,6 @@ public:
     afx_msg void OnBnClickedGpuTempTipCheck();
     afx_msg void OnBnClickedHddTempTipCheck();
     afx_msg void OnBnClickedMbdTempTipCheck();
-    afx_msg void OnBnClickedGithubRadio();
-    afx_msg void OnBnClickedGiteeRadio();
     virtual void OnCancel();
     afx_msg void OnBnClickedRestoreDefaultTimeSpanButton();
     afx_msg void OnCbnSelchangeSelectHardDiskCombo();

@@ -358,8 +358,6 @@ BOOL CTaskBarSettingsDlg::OnInitDialog()
         m_atuo_adapt_light_theme_chk.EnableWindow(FALSE);
     }
 
-    m_double_click_combo.AddString(CCommon::LoadText(IDS_OPEN_CONNECTION_DETIAL));
-    m_double_click_combo.AddString(CCommon::LoadText(IDS_OPEN_HISTORICAL_TRAFFIC));
     m_double_click_combo.AddString(CCommon::LoadText(IDS_SHOW_HIDE_CPU_MEMORY));
     m_double_click_combo.AddString(CCommon::LoadText(IDS_OPEN_OPTION_SETTINGS));
     m_double_click_combo.AddString(CCommon::LoadText(IDS_OPEN_TASK_MANAGER));

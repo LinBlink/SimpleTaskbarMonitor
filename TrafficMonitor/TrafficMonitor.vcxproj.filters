@@ -33,15 +33,9 @@
     <Filter Include="源文件和头文件\对话框类\选项设置对话框">
       <UniqueIdentifier>{98909116-8f3b-47d0-8e3f-ef90b29a2acc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件和头文件\对话框类\HistoryTrafficDlg">
-      <UniqueIdentifier>{feb21fbc-174b-4c26-aaa7-9f4b5e6ddd99}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件和头文件\对话框类\NetworkInfoDlg">
-      <UniqueIdentifier>{cb7cc4d3-21ca-46e1-ab0e-a35ca66a5603}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件和头文件\对话框类\SkinDlg">
-      <UniqueIdentifier>{79053472-785c-4667-a4f9-8b06a83ef04f}</UniqueIdentifier>
-    </Filter>
+    
+    
+    
     <Filter Include="源文件和头文件\头文件">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
@@ -79,9 +73,7 @@
     <Filter Include="源文件和头文件\派生的控件类\LinkStatic">
       <UniqueIdentifier>{6fce899f-3e92-40c2-a69b-ffcfb4a4c19f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件和头文件\公共的类\CalendarHelper">
-      <UniqueIdentifier>{9fa66474-d19b-4357-9813-e511bb20c722}</UniqueIdentifier>
-    </Filter>
+    
     <Filter Include="源文件和头文件\公共的类\AdapterCommon">
       <UniqueIdentifier>{75cd7f4d-06b2-467e-9960-994560da6e7b}</UniqueIdentifier>
     </Filter>
@@ -109,9 +101,7 @@
     <Filter Include="源文件和头文件\公共的类\CVariant">
       <UniqueIdentifier>{1ca17ad5-07ba-4361-bbeb-fdc5047697fc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件和头文件\公共的类\UpdateHelper">
-      <UniqueIdentifier>{2b0e9f5d-dbce-4ba7-a158-7d9b705fcc02}</UniqueIdentifier>
-    </Filter>
+    
     <Filter Include="源文件和头文件\对话框类\BaseDialog">
       <UniqueIdentifier>{6f91f987-8834-4e89-b14e-d3ae15040848}</UniqueIdentifier>
     </Filter>
@@ -121,9 +111,7 @@
     <Filter Include="源文件和头文件\对话框类\选项设置对话框\AutoAdaptSettingsDlg">
       <UniqueIdentifier>{2393c651-03a5-467c-a927-a3e99fdc48c4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件和头文件\公共的类\HistoryTrafficFile">
-      <UniqueIdentifier>{5bf9c8c3-2115-4e6d-897c-432303615271}</UniqueIdentifier>
-    </Filter>
+    
     <Filter Include="测试">
       <UniqueIdentifier>{df6d5fed-e1e8-4538-b028-f046ac67ad3f}</UniqueIdentifier>
     </Filter>
@@ -133,18 +121,12 @@
     <Filter Include="源文件和头文件\对话框类\选项设置对话框\DisplayTextSettingDlg">
       <UniqueIdentifier>{b6c785d6-4031-46d1-b224-4dd87a34404e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件和头文件\派生的控件类\HistoryTrafficListCtrl">
-      <UniqueIdentifier>{74012c97-afb7-4e09-8b11-4e2945c37449}</UniqueIdentifier>
-    </Filter>
+    
     <Filter Include="源文件和头文件\派生的控件类\ListCtrlEx">
       <UniqueIdentifier>{44872bda-27ce-407a-b5a7-fa9524bfb83c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件和头文件\公共的类\SkinFile">
-      <UniqueIdentifier>{f2a40ca2-c391-46a6-8508-b2f8c30c68a2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件和头文件\公共的类\TinyXml2Helper">
-      <UniqueIdentifier>{ece2a796-fdd6-49e1-987e-11968b3f56a6}</UniqueIdentifier>
-    </Filter>
+    
+    
     <Filter Include="源文件和头文件\公共的类\FilePathHelper">
       <UniqueIdentifier>{2ee3ad9e-4dc0-4ca4-91b1-2c6225bebd63}</UniqueIdentifier>
     </Filter>
@@ -160,9 +142,7 @@
     <Filter Include="源文件和头文件\公共的类\HighResolutionTimer">
       <UniqueIdentifier>{c164ccd7-eb7c-465c-8828-d7a38eab573c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件和头文件\公共的类\tinyxml2">
-      <UniqueIdentifier>{24b802e1-bc90-4f4c-8862-0ba6310f05f1}</UniqueIdentifier>
-    </Filter>
+    
     <Filter Include="源文件和头文件\公共的类\TaskbarItemOrderHelper">
       <UniqueIdentifier>{22cfb8c5-2d79-4f91-add4-fb393e20475e}</UniqueIdentifier>
     </Filter>
@@ -238,12 +218,8 @@
     <Filter Include="源文件和头文件\公共的类\StrTable">
       <UniqueIdentifier>{357eeb5d-af51-4701-83c9-e13a17c7f771}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件和头文件\公共的类\SkinManager">
-      <UniqueIdentifier>{28301057-fd34-4d04-a86a-0520143fdc14}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件和头文件\公共的类\PluginUpdateHelper">
-      <UniqueIdentifier>{4d4d9bb2-17eb-4f13-978b-c204a1b227db}</UniqueIdentifier>
-    </Filter>
+    
+    
     <Filter Include="源文件和头文件\公共的类\DisplayItem">
       <UniqueIdentifier>{4785624f-2ca9-4f92-8cfc-c7a7c3bfba74}</UniqueIdentifier>
     </Filter>
@@ -283,9 +259,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>源文件和头文件\stdafx</Filter>
     </ClInclude>
-    <ClInclude Include="MainWndSettingsDlg.h">
-      <Filter>源文件和头文件\对话框类\选项设置对话框</Filter>
-    </ClInclude>
     <ClInclude Include="TaskBarSettingsDlg.h">
       <Filter>源文件和头文件\对话框类\选项设置对话框</Filter>
     </ClInclude>
@@ -295,23 +268,11 @@
     <ClInclude Include="GeneralSettingsDlg.h">
       <Filter>源文件和头文件\对话框类\选项设置对话框</Filter>
     </ClInclude>
-    <ClInclude Include="HistoryTrafficDlg.h">
-      <Filter>源文件和头文件\对话框类\HistoryTrafficDlg</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkInfoDlg.h">
-      <Filter>源文件和头文件\对话框类\NetworkInfoDlg</Filter>
-    </ClInclude>
-    <ClInclude Include="SkinDlg.h">
-      <Filter>源文件和头文件\对话框类\SkinDlg</Filter>
-    </ClInclude>
     <ClInclude Include="IconSelectDlg.h">
       <Filter>源文件和头文件\对话框类\IconSelectDlg</Filter>
     </ClInclude>
     <ClInclude Include="PictureStatic.h">
       <Filter>源文件和头文件\派生的控件类\PictureStatic</Filter>
-    </ClInclude>
-    <ClInclude Include="CSkinPreviewView.h">
-      <Filter>源文件和头文件\对话框类\SkinDlg</Filter>
     </ClInclude>
     <ClInclude Include="Common.h">
       <Filter>源文件和头文件\公共的类\Common</Filter>
@@ -331,23 +292,11 @@
     <ClInclude Include="IniHelper.h">
       <Filter>源文件和头文件\公共的类\IniHelper</Filter>
     </ClInclude>
-    <ClInclude Include="MainWndColorDlg.h">
-      <Filter>源文件和头文件\对话框类\颜色设置对话框</Filter>
-    </ClInclude>
     <ClInclude Include="LinkStatic.h">
       <Filter>源文件和头文件\派生的控件类\LinkStatic</Filter>
     </ClInclude>
     <ClInclude Include="TaskbarColorDlg.h">
       <Filter>源文件和头文件\对话框类\颜色设置对话框</Filter>
-    </ClInclude>
-    <ClInclude Include="HistoryTrafficListDlg.h">
-      <Filter>源文件和头文件\对话框类\HistoryTrafficDlg</Filter>
-    </ClInclude>
-    <ClInclude Include="HistoryTrafficCalendarDlg.h">
-      <Filter>源文件和头文件\对话框类\HistoryTrafficDlg</Filter>
-    </ClInclude>
-    <ClInclude Include="CalendarHelper.h">
-      <Filter>源文件和头文件\公共的类\CalendarHelper</Filter>
     </ClInclude>
     <ClInclude Include="AdapterCommon.h">
       <Filter>源文件和头文件\公共的类\AdapterCommon</Filter>
@@ -357,6 +306,9 @@
     </ClInclude>
     <ClInclude Include="AboutDlg.h">
       <Filter>源文件和头文件\对话框类\AboutDlg</Filter>
+    </ClInclude>
+    <ClInclude Include="CAutoAdaptSettingsDlg.h">
+      <Filter>源文件和头文件\对话框类\选项设置对话框\AutoAdaptSettingsDlg</Filter>
     </ClInclude>
     <ClInclude Include="SimpleXML.h">
       <Filter>源文件和头文件\公共的类\SimpleXML</Filter>
@@ -379,23 +331,11 @@
     <ClInclude Include="DrawCommonEx.h">
       <Filter>源文件和头文件\公共的类\DrawCommon</Filter>
     </ClInclude>
-    <ClInclude Include="UpdateHelper.h">
-      <Filter>源文件和头文件\公共的类\UpdateHelper</Filter>
-    </ClInclude>
     <ClInclude Include="BaseDialog.h">
       <Filter>源文件和头文件\对话框类\BaseDialog</Filter>
     </ClInclude>
     <ClInclude Include="TaskbarDefaultStyle.h">
       <Filter>源文件和头文件\公共的类\TaskbarDefaultStyle</Filter>
-    </ClInclude>
-    <ClInclude Include="CAutoAdaptSettingsDlg.h">
-      <Filter>源文件和头文件\对话框类\选项设置对话框\AutoAdaptSettingsDlg</Filter>
-    </ClInclude>
-    <ClInclude Include="HistoryTrafficFile.h">
-      <Filter>源文件和头文件\公共的类\HistoryTrafficFile</Filter>
-    </ClInclude>
-    <ClInclude Include="Test.h">
-      <Filter>测试</Filter>
     </ClInclude>
     <ClInclude Include="WIC.h">
       <Filter>源文件和头文件\公共的类\WIC</Filter>
@@ -403,17 +343,8 @@
     <ClInclude Include="DisplayTextSettingDlg.h">
       <Filter>源文件和头文件\对话框类\选项设置对话框\DisplayTextSettingDlg</Filter>
     </ClInclude>
-    <ClInclude Include="HistoryTrafficListCtrl.h">
-      <Filter>源文件和头文件\派生的控件类\HistoryTrafficListCtrl</Filter>
-    </ClInclude>
     <ClInclude Include="ListCtrlEx.h">
       <Filter>源文件和头文件\派生的控件类\ListCtrlEx</Filter>
-    </ClInclude>
-    <ClInclude Include="SkinFile.h">
-      <Filter>源文件和头文件\公共的类\SkinFile</Filter>
-    </ClInclude>
-    <ClInclude Include="TinyXml2Helper.h">
-      <Filter>源文件和头文件\公共的类\TinyXml2Helper</Filter>
     </ClInclude>
     <ClInclude Include="FilePathHelper.h">
       <Filter>源文件和头文件\公共的类\FilePathHelper</Filter>
@@ -429,9 +360,6 @@
     </ClInclude>
     <ClInclude Include="HighResolutionTimer.h">
       <Filter>源文件和头文件\公共的类\HighResolutionTimer</Filter>
-    </ClInclude>
-    <ClInclude Include="tinyxml2\tinyxml2.h">
-      <Filter>源文件和头文件\公共的类\tinyxml2</Filter>
     </ClInclude>
     <ClInclude Include="TaskbarItemOrderHelper.h">
       <Filter>源文件和头文件\公共的类\TaskbarItemOrderHelper</Filter>
@@ -508,9 +436,6 @@
     <ClInclude Include="WindowsWebExperienceDetector.h">
       <Filter>源文件和头文件\公共的类\WindowsWebExperienceDetector</Filter>
     </ClInclude>
-    <ClInclude Include="SkinAutoAdaptSettingDlg.h">
-      <Filter>源文件和头文件\对话框类\SkinDlg</Filter>
-    </ClInclude>
     <ClInclude Include="Win11TaskbarSettingDlg.h">
       <Filter>源文件和头文件\对话框类\选项设置对话框\Win11TaskbarSettingDlg</Filter>
     </ClInclude>
@@ -532,14 +457,8 @@
     <ClInclude Include="TaskbarHelper.h">
       <Filter>源文件和头文件\TaskBarDlg</Filter>
     </ClInclude>
-    <ClInclude Include="SkinManager.h">
-      <Filter>源文件和头文件\公共的类\SkinManager</Filter>
-    </ClInclude>
     <ClInclude Include="SettingsHelper.h">
       <Filter>源文件和头文件\公共的类\IniHelper</Filter>
-    </ClInclude>
-    <ClInclude Include="PluginUpdateHelper.h">
-      <Filter>源文件和头文件\公共的类\PluginUpdateHelper</Filter>
     </ClInclude>
     <ClInclude Include="DisplayItem.h">
       <Filter>源文件和头文件\公共的类\DisplayItem</Filter>
@@ -585,32 +504,17 @@
     <ClCompile Include="GeneralSettingsDlg.cpp">
       <Filter>源文件和头文件\对话框类\选项设置对话框</Filter>
     </ClCompile>
-    <ClCompile Include="MainWndSettingsDlg.cpp">
-      <Filter>源文件和头文件\对话框类\选项设置对话框</Filter>
-    </ClCompile>
     <ClCompile Include="TaskBarSettingsDlg.cpp">
       <Filter>源文件和头文件\对话框类\选项设置对话框</Filter>
     </ClCompile>
     <ClCompile Include="OptionsDlg.cpp">
       <Filter>源文件和头文件\对话框类\选项设置对话框</Filter>
     </ClCompile>
-    <ClCompile Include="HistoryTrafficDlg.cpp">
-      <Filter>源文件和头文件\对话框类\HistoryTrafficDlg</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkInfoDlg.cpp">
-      <Filter>源文件和头文件\对话框类\NetworkInfoDlg</Filter>
-    </ClCompile>
-    <ClCompile Include="SkinDlg.cpp">
-      <Filter>源文件和头文件\对话框类\SkinDlg</Filter>
-    </ClCompile>
     <ClCompile Include="IconSelectDlg.cpp">
       <Filter>源文件和头文件\对话框类\IconSelectDlg</Filter>
     </ClCompile>
     <ClCompile Include="PictureStatic.cpp">
       <Filter>源文件和头文件\派生的控件类\PictureStatic</Filter>
-    </ClCompile>
-    <ClCompile Include="CSkinPreviewView.cpp">
-      <Filter>源文件和头文件\对话框类\SkinDlg</Filter>
     </ClCompile>
     <ClCompile Include="Common.cpp">
       <Filter>源文件和头文件\公共的类\Common</Filter>
@@ -630,23 +534,11 @@
     <ClCompile Include="IniHelper.cpp">
       <Filter>源文件和头文件\公共的类\IniHelper</Filter>
     </ClCompile>
-    <ClCompile Include="MainWndColorDlg.cpp">
-      <Filter>源文件和头文件\对话框类\颜色设置对话框</Filter>
-    </ClCompile>
     <ClCompile Include="LinkStatic.cpp">
       <Filter>源文件和头文件\派生的控件类\LinkStatic</Filter>
     </ClCompile>
     <ClCompile Include="TaskbarColorDlg.cpp">
       <Filter>源文件和头文件\对话框类\颜色设置对话框</Filter>
-    </ClCompile>
-    <ClCompile Include="HistoryTrafficListDlg.cpp">
-      <Filter>源文件和头文件\对话框类\HistoryTrafficDlg</Filter>
-    </ClCompile>
-    <ClCompile Include="HistoryTrafficCalendarDlg.cpp">
-      <Filter>源文件和头文件\对话框类\HistoryTrafficDlg</Filter>
-    </ClCompile>
-    <ClCompile Include="CalendarHelper.cpp">
-      <Filter>源文件和头文件\公共的类\CalendarHelper</Filter>
     </ClCompile>
     <ClCompile Include="AdapterCommon.cpp">
       <Filter>源文件和头文件\公共的类\AdapterCommon</Filter>
@@ -656,6 +548,9 @@
     </ClCompile>
     <ClCompile Include="AboutDlg.cpp">
       <Filter>源文件和头文件\对话框类\AboutDlg</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutoAdaptSettingsDlg.cpp">
+      <Filter>源文件和头文件\对话框类\选项设置对话框\AutoAdaptSettingsDlg</Filter>
     </ClCompile>
     <ClCompile Include="SimpleXML.cpp">
       <Filter>源文件和头文件\公共的类\SimpleXML</Filter>
@@ -678,23 +573,11 @@
     <ClCompile Include="DrawCommonEx.cpp">
       <Filter>源文件和头文件\公共的类\DrawCommon</Filter>
     </ClCompile>
-    <ClCompile Include="UpdateHelper.cpp">
-      <Filter>源文件和头文件\公共的类\UpdateHelper</Filter>
-    </ClCompile>
     <ClCompile Include="BaseDialog.cpp">
       <Filter>源文件和头文件\对话框类\BaseDialog</Filter>
     </ClCompile>
     <ClCompile Include="TaskbarDefaultStyle.cpp">
       <Filter>源文件和头文件\公共的类\TaskbarDefaultStyle</Filter>
-    </ClCompile>
-    <ClCompile Include="CAutoAdaptSettingsDlg.cpp">
-      <Filter>源文件和头文件\对话框类\选项设置对话框\AutoAdaptSettingsDlg</Filter>
-    </ClCompile>
-    <ClCompile Include="HistoryTrafficFile.cpp">
-      <Filter>源文件和头文件\公共的类\HistoryTrafficFile</Filter>
-    </ClCompile>
-    <ClCompile Include="Test.cpp">
-      <Filter>测试</Filter>
     </ClCompile>
     <ClCompile Include="WIC.cpp">
       <Filter>源文件和头文件\公共的类\WIC</Filter>
@@ -702,17 +585,8 @@
     <ClCompile Include="DisplayTextSettingDlg.cpp">
       <Filter>源文件和头文件\对话框类\选项设置对话框\DisplayTextSettingDlg</Filter>
     </ClCompile>
-    <ClCompile Include="HistoryTrafficListCtrl.cpp">
-      <Filter>源文件和头文件\派生的控件类\HistoryTrafficListCtrl</Filter>
-    </ClCompile>
     <ClCompile Include="ListCtrlEx.cpp">
       <Filter>源文件和头文件\派生的控件类\ListCtrlEx</Filter>
-    </ClCompile>
-    <ClCompile Include="SkinFile.cpp">
-      <Filter>源文件和头文件\公共的类\SkinFile</Filter>
-    </ClCompile>
-    <ClCompile Include="TinyXml2Helper.cpp">
-      <Filter>源文件和头文件\公共的类\TinyXml2Helper</Filter>
     </ClCompile>
     <ClCompile Include="FilePathHelper.cpp">
       <Filter>源文件和头文件\公共的类\FilePathHelper</Filter>
@@ -725,9 +599,6 @@
     </ClCompile>
     <ClCompile Include="ComboBox2.cpp">
       <Filter>源文件和头文件\派生的控件类\CComboBox2</Filter>
-    </ClCompile>
-    <ClCompile Include="tinyxml2\tinyxml2.cpp">
-      <Filter>源文件和头文件\公共的类\tinyxml2</Filter>
     </ClCompile>
     <ClCompile Include="TaskbarItemOrderHelper.cpp">
       <Filter>源文件和头文件\公共的类\TaskbarItemOrderHelper</Filter>
@@ -792,9 +663,6 @@
     <ClCompile Include="WindowsWebExperienceDetector.cpp">
       <Filter>源文件和头文件\公共的类\WindowsWebExperienceDetector</Filter>
     </ClCompile>
-    <ClCompile Include="SkinAutoAdaptSettingDlg.cpp">
-      <Filter>源文件和头文件\对话框类\SkinDlg</Filter>
-    </ClCompile>
     <ClCompile Include="Win11TaskbarSettingDlg.cpp">
       <Filter>源文件和头文件\对话框类\选项设置对话框\Win11TaskbarSettingDlg</Filter>
     </ClCompile>
@@ -813,14 +681,8 @@
     <ClCompile Include="TaskbarHelper.cpp">
       <Filter>源文件和头文件\TaskBarDlg</Filter>
     </ClCompile>
-    <ClCompile Include="SkinManager.cpp">
-      <Filter>源文件和头文件\公共的类\SkinManager</Filter>
-    </ClCompile>
     <ClCompile Include="SettingsHelper.cpp">
       <Filter>源文件和头文件\公共的类\IniHelper</Filter>
-    </ClCompile>
-    <ClCompile Include="PluginUpdateHelper.cpp">
-      <Filter>源文件和头文件\公共的类\PluginUpdateHelper</Filter>
     </ClCompile>
     <ClCompile Include="DisplayItem.cpp">
       <Filter>源文件和头文件\公共的类\DisplayItem</Filter>

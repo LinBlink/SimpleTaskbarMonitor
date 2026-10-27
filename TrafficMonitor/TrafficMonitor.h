@@ -20,7 +20,6 @@
 #include "TaskBarDlgDrawCommon.h"
 #include "DllFunctions.h"
 #include "StrTable.h"
-#include "PluginUpdateHelper.h"
 #include "PluginInterface.h"
 
 // CTrafficMonitorApp:
@@ -38,9 +37,7 @@ public:
     wstring m_module_path;      //程序exe文件的路径
     wstring m_module_path_reg;  //用于作为写入注册表开机自项的exe文件的路径（如果路径中有空格，加上引号）
     wstring m_config_path;
-    wstring m_history_traffic_path;
     wstring m_log_path;
-    wstring m_skin_path;
     wstring m_system_dir;
     wstring m_config_dir;
 
@@ -68,7 +65,6 @@ public:
     bool m_module_dir_writable{ true };         //指示程序所在目录是否可写
 
     //选项设置数据
-    MainWndSettingData m_main_wnd_data;
     TaskBarSettingData m_taskbar_data;
     GeneralSettingData m_general_data;
     //其他设置数据
@@ -89,11 +85,7 @@ public:
     CPluginManager m_plugins;
     CDllFunctions m_dll_functions;
     CStrTable m_str_table;
-    CPluginUpdateHelper m_plugin_update;
 
-    CMenu m_main_menu;          //主窗口右键菜单
-    CMenu m_main_menu_plugin;   //右击主窗口插件区域的右键菜单
-    CMenu m_main_menu_plugin_sub_menu;
     CMenu m_taskbar_menu;       //任务栏窗口右键菜单
     CMenu m_taskbar_menu_plugin;    //右击任务栏窗口插件区域的右键菜单
     CMenu m_taskbar_menu_plugin_sub_menu;
@@ -124,10 +116,6 @@ public:
     int GetDpi() const { return m_dpi; }
     void SetDPI(int dpi) { m_dpi = dpi; }
 
-    void CheckUpdate(bool message);     //检查更新，如果message为true，则在检查时弹出提示信息
-    void CheckUpdateInThread(bool message); //在后台线程中检查更新
-    //启动时检查更新线程函数
-    static UINT CheckUpdateThreadFunc(LPVOID lpParam);
     static UINT InitOpenHardwareMonitorLibThreadFunc(LPVOID lpParam);
 
     bool SetAutoRun(bool auto_run, bool task_scheduler);
@@ -147,7 +135,6 @@ public:
 
     void AutoSelectNotifyIcon();
 
-    bool IsCheckingForUpdate() const { return m_checking_update; }      //是否正在检查更新
 
     void InitOpenHardwareLibInThread();     //开启一个后台线程初始化OpenHardwareMonitor
     void UpdateOpenHardwareMonitorEnableState();    //更新硬件监控的启用/禁用状态
@@ -178,7 +165,6 @@ private:
     bool m_exit_when_start_by_restart_manager{ true };      //如果程序被Windows重启管理器重新启动，则退出程序
     int m_dpi{ 96 };
 
-    bool m_checking_update{ false };        //是否正在检查更新
 
     std::map<UINT, HICON> m_menu_icons;      //菜单图标资源。key是图标资源的ID，vlaue是图标的句柄
 

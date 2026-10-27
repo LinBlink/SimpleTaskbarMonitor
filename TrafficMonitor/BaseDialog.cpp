@@ -394,10 +394,7 @@ void CBaseDialog::OnDestroy()
     m_unique_hwnd[GetDialogName()] = NULL;
     SaveConfig();
 
-    //当所有对话框关闭时重新设置主窗口置顶
-    CTaskbarCore* pDlg = dynamic_cast<CTaskbarCore*>(theApp.m_pMainWnd);
-    if (pDlg != nullptr && IsAllDialogClosed())
-        pDlg->SetAlwaysOnTop();
+
 }
 
 

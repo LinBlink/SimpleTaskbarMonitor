@@ -1127,21 +1127,15 @@ void CTaskBarDlg::OnInitMenu(CMenu* pMenu)
     CDialogEx::OnInitMenu(pMenu);
 
     // TODO: 在此处添加消息处理程序代码
-    pMenu->CheckMenuItem(ID_SHOW_MAIN_WND, MF_BYCOMMAND | (!theApp.m_cfg_data.m_hide_main_window ? MF_CHECKED : MF_UNCHECKED));
 
     pMenu->EnableMenuItem(ID_SELECT_ALL_CONNECTION, MF_BYCOMMAND | (theApp.m_general_data.show_all_interface ? MF_GRAYED : MF_ENABLED));
-    pMenu->EnableMenuItem(ID_CHECK_UPDATE, MF_BYCOMMAND | (theApp.IsCheckingForUpdate() ? MF_GRAYED : MF_ENABLED));
+
 
     //pMenu->SetDefaultItem(ID_NETWORK_INFO);
     //设置默认菜单项
     switch (theApp.m_taskbar_data.double_click_action)
     {
-    case DoubleClickAction::CONNECTION_INFO:
-        pMenu->SetDefaultItem(ID_NETWORK_INFO);
-        break;
-    case DoubleClickAction::HISTORY_TRAFFIC:
-        pMenu->SetDefaultItem(ID_TRAFFIC_HISTORY);
-        break;
+
     case DoubleClickAction::SHOW_MORE_INFO:
         pMenu->SetDefaultItem(ID_SHOW_CPU_MEMORY2);
         break;
@@ -1221,12 +1215,7 @@ void CTaskBarDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
     }
     switch (theApp.m_taskbar_data.double_click_action)
     {
-    case DoubleClickAction::CONNECTION_INFO:
-        SendMessage(WM_COMMAND, ID_NETWORK_INFO);        //双击后弹出“连接详情”对话框
-        break;
-    case DoubleClickAction::HISTORY_TRAFFIC:
-        SendMessage(WM_COMMAND, ID_TRAFFIC_HISTORY);        //双击后弹出“历史流量统计”对话框
-        break;
+
     case DoubleClickAction::SHOW_MORE_INFO:
         PostMessage(WM_COMMAND, ID_SHOW_CPU_MEMORY2);       //切换显示CPU和内存利用率
         break;

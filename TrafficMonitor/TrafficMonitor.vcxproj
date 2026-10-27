@@ -772,12 +772,11 @@
   <ItemGroup>
     <ClInclude Include="..\include\PluginInterface.h" />
     <ClInclude Include="AboutDlg.h" />
+    <ClInclude Include="CAutoAdaptSettingsDlg.h" />
     <ClInclude Include="AdapterCommon.h" />
     <ClInclude Include="AppAlreadyRuningDlg.h" />
     <ClInclude Include="auto_start_helper.h" />
     <ClInclude Include="BaseDialog.h" />
-    <ClInclude Include="CalendarHelper.h" />
-    <ClInclude Include="CAutoAdaptSettingsDlg.h" />
     <ClInclude Include="ClassicalTaskbarDlg.h" />
     <ClInclude Include="CMFCColorDialogEx.h" />
     <ClInclude Include="ColorSettingListCtrl.h" />
@@ -799,9 +798,6 @@
     <ClInclude Include="FileDialogEx.h" />
     <ClInclude Include="FilePathHelper.h" />
     <ClInclude Include="HighResolutionTimer.h" />
-    <ClInclude Include="HistoryTrafficCalendarDlg.h" />
-    <ClInclude Include="HistoryTrafficFile.h" />
-    <ClInclude Include="HistoryTrafficListDlg.h" />
     <ClInclude Include="HResultException.h" />
     <ClInclude Include="IDrawCommon.h" />
     <ClInclude Include="Image2DEffect.h" />
@@ -810,18 +806,12 @@
     <ClInclude Include="ColorStatic.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="CommonData.h" />
-    <ClInclude Include="CSkinPreviewView.h" />
     <ClInclude Include="DrawCommon.h" />
     <ClInclude Include="GeneralSettingsDlg.h" />
-    <ClInclude Include="HistoryTrafficDlg.h" />
     <ClInclude Include="IconSelectDlg.h" />
     <ClInclude Include="IniHelper.h" />
-    <ClInclude Include="HistoryTrafficListCtrl.h" />
     <ClInclude Include="ListCtrlEx.h" />
-    <ClInclude Include="MainWndColorDlg.h" />
-    <ClInclude Include="MainWndSettingsDlg.h" />
     <ClInclude Include="MessageDlg.h" />
-    <ClInclude Include="NetworkInfoDlg.h" />
     <ClInclude Include="Nullable.hpp" />
     <ClInclude Include="OptionsDlg.h" />
     <ClInclude Include="PdhHardwareQuery\CPUUsage.h" />
@@ -833,17 +823,12 @@
     <ClInclude Include="PluginInfoDlg.h" />
     <ClInclude Include="PluginManager.h" />
     <ClInclude Include="PluginManagerDlg.h" />
-    <ClInclude Include="PluginUpdateHelper.h" />
     <ClInclude Include="RenderAPISupport.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SelectConnectionsDlg.h" />
     <ClInclude Include="SetItemOrderDlg.h" />
     <ClInclude Include="SettingsHelper.h" />
     <ClInclude Include="SimpleXML.h" />
-    <ClInclude Include="SkinAutoAdaptSettingDlg.h" />
-    <ClInclude Include="SkinDlg.h" />
-    <ClInclude Include="SkinFile.h" />
-    <ClInclude Include="SkinManager.h" />
     <ClInclude Include="SpinEdit.h" />
     <ClInclude Include="StaticEx.h" />
     <ClInclude Include="stdafx.h" />
@@ -858,12 +843,8 @@
     <ClInclude Include="TaskbarHelper.h" />
     <ClInclude Include="TaskbarItemOrderHelper.h" />
     <ClInclude Include="TaskBarSettingsDlg.h" />
-    <ClInclude Include="Test.h" />
-    <ClInclude Include="TinyXml2Helper.h" />
-    <ClInclude Include="tinyxml2\tinyxml2.h" />
     <ClInclude Include="TrafficMonitor.h" />
     <ClInclude Include="TaskbarCore.h" />
-    <ClInclude Include="UpdateHelper.h" />
     <ClInclude Include="WIC.h" />
     <ClInclude Include="Win11TaskbarDlg.h" />
     <ClInclude Include="Win11TaskbarSettingDlg.h" />
@@ -874,12 +855,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
+    <ClCompile Include="CAutoAdaptSettingsDlg.cpp" />
     <ClCompile Include="AdapterCommon.cpp" />
     <ClCompile Include="AppAlreadyRuningDlg.cpp" />
     <ClCompile Include="auto_start_helper.cpp" />
     <ClCompile Include="BaseDialog.cpp" />
-    <ClCompile Include="CalendarHelper.cpp" />
-    <ClCompile Include="CAutoAdaptSettingsDlg.cpp" />
     <ClCompile Include="ClassicalTaskbarDlg.cpp" />
     <ClCompile Include="CMFCColorDialogEx.cpp" />
     <ClCompile Include="ColorSettingListCtrl.cpp" />
@@ -901,27 +881,18 @@
     <ClCompile Include="Dxgi1Support2.cpp" />
     <ClCompile Include="FileDialogEx.cpp" />
     <ClCompile Include="FilePathHelper.cpp" />
-    <ClCompile Include="HistoryTrafficCalendarDlg.cpp" />
-    <ClCompile Include="HistoryTrafficFile.cpp" />
-    <ClCompile Include="HistoryTrafficListDlg.cpp" />
     <ClCompile Include="HResultException.cpp" />
     <ClCompile Include="IDrawCommon.cpp" />
     <ClCompile Include="Image2DEffect.cpp" />
     <ClCompile Include="LinkStatic.cpp" />
     <ClCompile Include="ColorStatic.cpp" />
     <ClCompile Include="Common.cpp" />
-    <ClCompile Include="CSkinPreviewView.cpp" />
     <ClCompile Include="DrawCommon.cpp" />
     <ClCompile Include="GeneralSettingsDlg.cpp" />
-    <ClCompile Include="HistoryTrafficDlg.cpp" />
     <ClCompile Include="IconSelectDlg.cpp" />
     <ClCompile Include="IniHelper.cpp" />
-    <ClCompile Include="HistoryTrafficListCtrl.cpp" />
     <ClCompile Include="ListCtrlEx.cpp" />
-    <ClCompile Include="MainWndColorDlg.cpp" />
-    <ClCompile Include="MainWndSettingsDlg.cpp" />
     <ClCompile Include="MessageDlg.cpp" />
-    <ClCompile Include="NetworkInfoDlg.cpp" />
     <ClCompile Include="OptionsDlg.cpp" />
     <ClCompile Include="PdhHardwareQuery\CPUUsage.cpp" />
     <ClCompile Include="PdhHardwareQuery\CpuFreq.cpp" />
@@ -932,15 +903,10 @@
     <ClCompile Include="PluginInfoDlg.cpp" />
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="PluginManagerDlg.cpp" />
-    <ClCompile Include="PluginUpdateHelper.cpp" />
     <ClCompile Include="SelectConnectionsDlg.cpp" />
     <ClCompile Include="SetItemOrderDlg.cpp" />
     <ClCompile Include="SettingsHelper.cpp" />
     <ClCompile Include="SimpleXML.cpp" />
-    <ClCompile Include="SkinAutoAdaptSettingDlg.cpp" />
-    <ClCompile Include="SkinDlg.cpp" />
-    <ClCompile Include="SkinFile.cpp" />
-    <ClCompile Include="SkinManager.cpp" />
     <ClCompile Include="SpinEdit.cpp" />
     <ClCompile Include="StaticEx.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -967,25 +933,8 @@
     <ClCompile Include="TaskbarHelper.cpp" />
     <ClCompile Include="TaskbarItemOrderHelper.cpp" />
     <ClCompile Include="TaskBarSettingsDlg.cpp" />
-    <ClCompile Include="Test.cpp" />
-    <ClCompile Include="TinyXml2Helper.cpp" />
-    <ClCompile Include="tinyxml2\tinyxml2.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug (lite)|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release (lite)|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64EC'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug (lite)|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug (lite)|ARM64EC'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64EC'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release (lite)|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release (lite)|ARM64EC'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="TrafficMonitor.cpp" />
     <ClCompile Include="TaskbarCore.cpp" />
-    <ClCompile Include="UpdateHelper.cpp" />
     <ClCompile Include="WIC.cpp" />
     <ClCompile Include="Win11TaskbarDlg.cpp" />
     <ClCompile Include="Win11TaskbarSettingDlg.cpp" />

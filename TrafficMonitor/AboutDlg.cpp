@@ -25,7 +25,6 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_TRANSLATOR_STATIC, m_translator_static);
     DDX_Control(pDX, IDC_STATIC_LICENSE, m_license);
     DDX_Control(pDX, IDC_OPENHARDWAREMONITOR_LINK, m_openhardwaremonitor_link);
-    DDX_Control(pDX, IDC_TINYXML2_LINK, m_tinyxml2_link);
     DDX_Control(pDX, IDC_MUSICPLAYER2_LINK, m_musicplayer2_link);
     DDX_Control(pDX, IDC_SIMPLENOTEPAD_LINK, m_simplenotepad_link);
     DDX_Control(pDX, IDC_STATIC_GITEE, m_gitee);
@@ -82,11 +81,9 @@ BOOL CAboutDlg::OnInitDialog()
     m_license.SetLinkIsURL(false);
 
     m_openhardwaremonitor_link.SetURL(_T("https://github.com/LibreHardwareMonitor/LibreHardwareMonitor"));
-    m_tinyxml2_link.SetURL(_T("https://github.com/leethomason/tinyxml2"));
     m_musicplayer2_link.SetURL(_T("https://github.com/zhongyang219/MusicPlayer2"));
     m_simplenotepad_link.SetURL(_T("https://github.com/zhongyang219/SimpleNotePad"));
     m_openhardwaremonitor_link.SetBackgroundColor(GetSysColor(COLOR_WINDOW));
-    m_tinyxml2_link.SetBackgroundColor(GetSysColor(COLOR_WINDOW));
     m_musicplayer2_link.SetBackgroundColor(GetSysColor(COLOR_WINDOW));
     m_simplenotepad_link.SetBackgroundColor(GetSysColor(COLOR_WINDOW));
     m_mail.SetBackgroundColor(GetSysColor(COLOR_WINDOW));
@@ -133,7 +130,6 @@ BOOL CAboutDlg::OnInitDialog()
     m_tool_tip.AddTool(&m_github, CCommon::LoadText(IDS_GOTO_GITHUB, _T("\r\nhttps://github.com/zhongyang219/TrafficMonitor")));
     m_tool_tip.AddTool(&m_gitee, CCommon::LoadText(IDS_GOTO_GITEE, _T("\r\nhttps://gitee.com/zhongyang219/TrafficMonitor")));
     m_tool_tip.AddTool(&m_openhardwaremonitor_link, m_openhardwaremonitor_link.GetURL());
-    m_tool_tip.AddTool(&m_tinyxml2_link, m_tinyxml2_link.GetURL());
     m_tool_tip.AddTool(&m_musicplayer2_link, CCommon::LoadText(IDS_MUSICPLAYER2_DESCRIPTION) + _T("\r\n") + m_musicplayer2_link.GetURL());
     m_tool_tip.AddTool(&m_simplenotepad_link, CCommon::LoadText(IDS_SIMPLENOTEPAD_DESCRIPTION) + _T("\r\n") + m_simplenotepad_link.GetURL());
 

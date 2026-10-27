@@ -63,19 +63,11 @@ void CGeneralSettingsDlg::OnSettingsApplied()
 {
     //当设置被应用时，重置xxxx_ori的值
     m_monitor_time_span_ori = m_data.monitor_time_span;
-    m_update_source_ori = m_data.update_source;
 }
 
 bool CGeneralSettingsDlg::InitializeControls()
 {
-    RepositionTextBasedControls({
-        { CtrlTextInfo::L4, IDC_CHECK_NOW_BUTTON, CtrlTextInfo::W16 }
-        });
-    RepositionTextBasedControls({
-        { CtrlTextInfo::L4, IDC_UPDATE_SORUCE_STATIC },
-        { CtrlTextInfo::L3, IDC_GITHUB_RADIO },
-        { CtrlTextInfo::L2, IDC_GITEE_RADIO }
-        });
+
     RepositionTextBasedControls({
         { CtrlTextInfo::L4, IDC_RESET_AUTO_RUN_BUTTON, CtrlTextInfo::W16 }
         });
@@ -219,8 +211,6 @@ void CGeneralSettingsDlg::SetControlEnable()
 
 
 BEGIN_MESSAGE_MAP(CGeneralSettingsDlg, CTabDlg)
-    ON_BN_CLICKED(IDC_CHECK_NOW_BUTTON, &CGeneralSettingsDlg::OnBnClickedCheckNowButton)
-    ON_BN_CLICKED(IDC_CHECK_UPDATE_CHECK, &CGeneralSettingsDlg::OnBnClickedCheckUpdateCheck)
     ON_BN_CLICKED(IDC_AUTO_RUN_CHECK, &CGeneralSettingsDlg::OnBnClickedAutoRunCheck)
     ON_BN_CLICKED(IDC_TODAY_TRAFFIC_TIP_CHECK, &CGeneralSettingsDlg::OnBnClickedTodayTrafficTipCheck)
     ON_BN_CLICKED(IDC_MEMORY_USAGE_TIP_CHECK, &CGeneralSettingsDlg::OnBnClickedMemoryUsageTipCheck)
@@ -233,8 +223,6 @@ BEGIN_MESSAGE_MAP(CGeneralSettingsDlg, CTabDlg)
     ON_BN_CLICKED(IDC_GPU_TEMP_TIP_CHECK, &CGeneralSettingsDlg::OnBnClickedGpuTempTipCheck)
     ON_BN_CLICKED(IDC_HDD_TEMP_TIP_CHECK, &CGeneralSettingsDlg::OnBnClickedHddTempTipCheck)
     ON_BN_CLICKED(IDC_MBD_TEMP_TIP_CHECK, &CGeneralSettingsDlg::OnBnClickedMbdTempTipCheck)
-    ON_BN_CLICKED(IDC_GITHUB_RADIO, &CGeneralSettingsDlg::OnBnClickedGithubRadio)
-    ON_BN_CLICKED(IDC_GITEE_RADIO, &CGeneralSettingsDlg::OnBnClickedGiteeRadio)
     ON_BN_CLICKED(IDC_RESTORE_DEFAULT_TIME_SPAN_BUTTON, &CGeneralSettingsDlg::OnBnClickedRestoreDefaultTimeSpanButton)
     ON_CBN_SELCHANGE(IDC_SELECT_HARD_DISK_COMBO, &CGeneralSettingsDlg::OnCbnSelchangeSelectHardDiskCombo)
     ON_BN_CLICKED(IDC_CPU_CHECK, &CGeneralSettingsDlg::OnBnClickedCpuCheck)
@@ -262,7 +250,6 @@ BOOL CGeneralSettingsDlg::OnInitDialog()
 
     // TODO:  在此添加额外的初始化
 
-    ((CButton*)GetDlgItem(IDC_CHECK_UPDATE_CHECK))->SetCheck(m_data.check_update_when_start);
     if (theApp.IsForceShowNotifyIcon())
     {
         m_data.show_notify_icon = true;
@@ -270,10 +257,7 @@ BOOL CGeneralSettingsDlg::OnInitDialog()
     }
     CheckDlgButton(IDC_SHOW_NOTIFY_ICON_CHECK, m_data.show_notify_icon);
 
-    if (m_data.update_source == 0)
-        CheckDlgButton(IDC_GITHUB_RADIO, TRUE);
-    else
-        CheckDlgButton(IDC_GITEE_RADIO, TRUE);
+
 
     //检查开始菜单的“启动”目录下有没有程序的快捷方式，如果有则设置开机自启动，然后删除快捷方式
     wstring start_up_path = CCommon::GetStartUpPath();
@@ -386,7 +370,6 @@ BOOL CGeneralSettingsDlg::OnInitDialog()
     m_monitor_span_edit.SetValue(m_data.monitor_time_span);
 
     m_monitor_time_span_ori = m_data.monitor_time_span;
-    m_update_source_ori = m_data.update_source;
 
     if (CTaskbarCore::Instance()->IsGetDiskUsageByPdh())
     {
@@ -458,18 +441,7 @@ BOOL CGeneralSettingsDlg::OnInitDialog()
 }
 
 
-void CGeneralSettingsDlg::OnBnClickedCheckNowButton()
-{
-    // TODO: 在此添加控件通知处理程序代码
-    theApp.CheckUpdateInThread(true);
-}
 
-
-void CGeneralSettingsDlg::OnBnClickedCheckUpdateCheck()
-{
-    // TODO: 在此添加控件通知处理程序代码
-    m_data.check_update_when_start = (IsDlgButtonChecked(IDC_CHECK_UPDATE_CHECK) != 0);
-}
 
 
 void CGeneralSettingsDlg::OnBnClickedAutoRunCheck()
@@ -684,27 +656,12 @@ void CGeneralSettingsDlg::OnBnClickedMbdTempTipCheck()
 }
 
 
-void CGeneralSettingsDlg::OnBnClickedGithubRadio()
-{
-    // TODO: 在此添加控件通知处理程序代码
-    m_data.update_source = 0;
-    theApp.m_general_data.update_source = 0;        //点击“更新源”的单选按钮时，同时更改theApp中的设置，以确保点击“立即检查”按钮时使用选择的更新源更新
-}
 
-
-void CGeneralSettingsDlg::OnBnClickedGiteeRadio()
-{
-    // TODO: 在此添加控件通知处理程序代码
-    m_data.update_source = 1;
-    theApp.m_general_data.update_source = 1;
-}
 
 
 void CGeneralSettingsDlg::OnCancel()
 {
     // TODO: 在此添加专用代码和/或调用基类
-    theApp.m_general_data.update_source = m_update_source_ori;      //点击“取消”时恢复开始的“更新源”选项
-
     CTabDlg::OnCancel();
 }
 

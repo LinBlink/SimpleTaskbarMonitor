@@ -1,58 +1,10 @@
 ﻿#include "stdafx.h"
 #include "CommonData.h"
 #include "Common.h"
-#include "CalendarHelper.h"
 #include "TrafficMonitor.h"
 #include "WindowsSettingHelper.h"
 
 ///////////////////////////////////////////////////////////////////////////////////
-int Date::week() const
-{
-    //计算当前是一年的第几天
-    int days{};
-    for (int i{ 1 }; i < month; i++)
-    {
-        days += CCalendarHelper::DaysInMonth(year, i);
-    }
-    days += day;
-    //计算这一年的1月1日是星期几
-    int week_day = CCalendarHelper::CaculateWeekDay(year, 1, 1);
-    if (theApp.m_cfg_data.m_sunday_first)
-    {
-        days += (week_day - 1);
-    }
-    else
-    {
-        days += (week_day - 2);
-    }
-    return days / 7 + 1;
-}
-
-bool Date::DateGreater(const Date& a, const Date& b)
-{
-    if (a.year != b.year)
-        return a.year > b.year;
-    else if (a.month != b.month)
-        return a.month > b.month;
-    else if (a.day != b.day)
-        return a.day > b.day;
-    else
-        return false;
-}
-
-bool Date::DateEqual(const Date& a, const Date& b)
-{
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////
-//HistoryTraffic
-unsigned __int64 HistoryTraffic::kBytes() const
-{
-    return up_kBytes + down_kBytes;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////////
 wstring& DispStrings::Get(CommonDisplayItem item)
@@ -157,36 +109,6 @@ std::vector<std::wstring> StringSet::ToVector() const
 std::set<std::wstring>& StringSet::data()
 {
     return string_set;
-}
-
-///////////////////////////////////////////////////////////////////////////////////
-bool SkinSettingData::IsEmpty() const
-{
-    return font.name.IsEmpty() && disp_str.GetAllItems().empty() && text_colors.empty();
-}
-
-bool SkinSettingData::operator==(const SkinSettingData& a) const
-{
-    return font == a.font && disp_str == a.disp_str && text_colors == a.text_colors && specify_each_item_color == a.specify_each_item_color;
-}
-
-///////////////////////////////////////////////////////////////////////////////////
-void MainWndSettingData::FormSkinSettingData(const SkinSettingData& sking_setting_data)
-{
-    font = sking_setting_data.font;
-    disp_str = sking_setting_data.disp_str;
-    text_colors = sking_setting_data.text_colors;
-    specify_each_item_color = sking_setting_data.specify_each_item_color;
-}
-
-SkinSettingData MainWndSettingData::ToSkinSettingData() const
-{
-    SkinSettingData sking_setting_data;
-    sking_setting_data.font = font;
-    sking_setting_data.disp_str = disp_str;
-    sking_setting_data.text_colors = text_colors;
-    sking_setting_data.specify_each_item_color = specify_each_item_color;
-    return sking_setting_data;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

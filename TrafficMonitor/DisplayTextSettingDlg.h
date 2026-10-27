@@ -10,7 +10,7 @@ class CDisplayTextSettingDlg : public CBaseDialog
 	DECLARE_DYNAMIC(CDisplayTextSettingDlg)
 
 public:
-	CDisplayTextSettingDlg(DispStrings& display_texts, bool main_window_text = false, CWnd* pParent = nullptr);   // 标准构造函数
+	CDisplayTextSettingDlg(DispStrings& display_texts, CWnd* pParent = nullptr);   // 标准构造函数
 	virtual ~CDisplayTextSettingDlg();
 
 // 对话框数据
@@ -22,7 +22,6 @@ private:
     DispStrings& m_display_texts;
 
     CListCtrlEx m_list_ctrl;
-    bool m_main_window_text{ false };       //如果为true，则为主窗口文本设置，否则为任务栏窗口设置
     CMenu m_menu;
     int m_item_selected{ -1 };
 

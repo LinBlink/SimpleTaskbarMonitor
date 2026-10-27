@@ -3,40 +3,6 @@
 #include "stdafx.h"
 #include "TaskbarItemOrderHelper.h"
 
-struct Date
-{
-    int year{};
-    int month{};
-    int day{};
-
-    int week() const;       //该日期是一年的第几周
-
-    //比较两个HistoryTraffic对象的日期，如果a的时间大于b，则返回true
-    static bool DateGreater(const Date& a, const Date& b);
-
-    //判断两个HistoryTraffic对象的日期是否相等
-    static bool DateEqual(const Date& a, const Date& b);
-
-};
-
-//储存某一天的历史流量
-struct HistoryTraffic : public Date
-{
-    //当天使用的流量（以KB为单位）
-    unsigned __int64 up_kBytes{};
-    unsigned __int64 down_kBytes{};
-    bool mixed{ true };     //如果不区分上传和下载流量，则为true
-
-    unsigned __int64 kBytes() const;
-
-};
-
-//历史流量统计中用于指示不同范围内的流量的颜色
-#define TRAFFIC_COLOR_BLUE RGB(0, 183, 238)
-#define TRAFFIC_COLOR_GREEN RGB(128, 194, 105)
-#define TRAFFIC_COLOR_YELLOE RGB(255, 216, 58)
-#define TRAFFIC_COLOR_RED RGB(255, 95, 74)
-#define TRAFFIC_COLOR_DARK_RED RGB(166, 19, 0)
 
 //网速单位
 enum class SpeedUnit
@@ -81,13 +47,10 @@ public:
 //鼠标双击窗口的动作
 enum class DoubleClickAction
 {
-    CONNECTION_INFO,    //连接详情
-    HISTORY_TRAFFIC,    //历史流量统计
     SHOW_MORE_INFO,     //显示更多信息
     OPTIONS,            //选项设置
     TASK_MANAGER,       //任务管理器
     SEPCIFIC_APP,       //指定应用程序
-    CHANGE_SKIN,        //更换皮肤
     NONE                //不执行任何动作
 };
 
@@ -144,16 +107,6 @@ struct FontInfo
     }
 };
 
-//历史流量统计列表视图中显示模式
-enum class HistoryTrafficViewType
-{
-    HV_DAY,         //日视图
-    HV_WEEK,        //周视图
-    HV_MONTH,          //月视图
-    HV_QUARTER,     //季视图
-    HV_YEAR            //年视图
-};
-
 struct StringSet
 {
 public:
@@ -186,35 +139,17 @@ struct LanguageInfo
 //选项设置数据
 struct MainConfigData
 {
-    int m_transparency{ 100 };          //窗口透明度
-    bool m_show_more_info{ false };     //显示更多信息
     bool m_show_task_bar_wnd{ false };  //显示任务栏窗口
-    bool m_hide_main_window;            //隐藏主窗口
-    //bool m_tbar_show_cpu_memory;      //任务栏窗口显示CPU和内存利用率
-
-    int m_position_x;   //窗口位置的x坐标
-    int m_position_y;   //窗口位置的y坐标
 
     bool m_auto_select{ false };    //自动选择连接
     bool m_select_all{ false };     //统计所有连接的网速
     string m_connection_name;      //当前选择网络的名称
 
-    wstring m_skin_name;            //选择的皮肤的名称
-
-    bool skin_auto_adapt{ false };  //根据深色/浅色模式自动切换皮肤
-    wstring skin_name_light_mode;   //浅色模式下的皮肤名称
-    wstring skin_name_dark_mode;    //深色模式下的皮肤名称
-
     int m_dft_notify_icon = 0;      //默认的通知图标(用于区分win10的深色和浅色模式)
     int m_notify_icon_selected{};   //要显示的通知区图标
     bool m_notify_icon_auto_adapt{ false }; //通知区图标是否自动适应Win10深浅色模式
 
-    //bool m_show_internet_ip{ false };     //是否在“连接详情”对话框中显示外网IP地址
-    bool m_use_log_scale{ false };          //“历史流量统计”对话框中绘制表示历史流量数值的矩形时是否使用对数比例
-    HistoryTrafficViewType m_view_type{};
-    bool m_sunday_first{ true };            //是否将周日作为一周的第一天
     StringSet plugin_disabled;      //已禁用的插件
-
 };
 
 //内存显示方式
@@ -225,19 +160,7 @@ enum class MemoryDisplay
     MEMORY_AVAILABLE        //内存可用
 };
 
-//为每个皮肤单独保存的数据
-struct SkinSettingData
-{
-    FontInfo font;          //字体
-    DispStrings disp_str;   //显示的文本
-    std::map<CommonDisplayItem, COLORREF> text_colors{};    //文字的颜色
-    bool specify_each_item_color{};
-
-    bool IsEmpty() const;
-    bool operator==(const SkinSettingData& a) const;
-};
-
-//选项设置中“主窗口设置”和“任务栏窗口设置”中公共的数据（不使用此结构体创建对象）
+//选项设置中“任务栏窗口设置”的公共数据（不使用此结构体创建对象）
 struct PublicSettingData
 {
     bool specify_each_item_color{ false };      //是否指定每个项目的颜色
@@ -254,22 +177,6 @@ struct PublicSettingData
     bool hide_percent;      //隐藏百分号
     DoubleClickAction double_click_action;      //鼠标双击动作
     wstring double_click_exe;   //鼠标双击动作为打开指定应用程序时，打开的程序路径
-};
-
-//#define MAIN_WND_COLOR_NUM 9      //主窗口颜色数量
-//选项设置中“主窗口设置”的数据
-struct MainWndSettingData : public PublicSettingData
-{
-    std::map<CommonDisplayItem, COLORREF> text_colors{};    //文字的颜色
-    bool swap_up_down{ false };     //交换上传和下载显示的位置
-    bool hide_main_wnd_when_fullscreen;     //有程序全屏运行时隐藏悬浮窗
-    bool m_always_on_top{ false };      //窗口置顶
-    bool m_lock_window_pos{ false };    //锁定窗口位置
-    bool m_mouse_penetrate{ false };    //鼠标穿透
-    bool m_alow_out_of_border{ false };     //是否允许悬浮窗超出屏幕边界
-
-    void FormSkinSettingData(const SkinSettingData& sking_setting_data);
-    SkinSettingData ToSkinSettingData() const;
 };
 
 //#define TASKBAR_COLOR_NUM 18      //任务栏窗口颜色数量
@@ -349,8 +256,6 @@ struct TaskBarSettingData : public PublicSettingData
 //选项设置中“常规设置”的数据
 struct GeneralSettingData
 {
-    bool check_update_when_start{ true };
-    int update_source{};                    //更新源。0: GitHub; 1: Gitee
     bool auto_run{ false };
     bool auto_run_by_task_scheduler{ false };   //是否通过任务计划程序实现开机自启
     bool show_notify_icon{ true };    //显示通知区域图标

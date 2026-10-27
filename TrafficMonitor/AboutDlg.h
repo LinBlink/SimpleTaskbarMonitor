@@ -23,7 +23,6 @@ protected:
     CToolTipCtrl m_tool_tip;            //鼠标指向时的工具提示
     CLinkStatic m_translator_static;
     CLinkStatic m_openhardwaremonitor_link;
-    CLinkStatic m_tinyxml2_link;
     CLinkStatic m_musicplayer2_link;
     CLinkStatic m_simplenotepad_link;
 
