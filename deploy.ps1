@@ -64,6 +64,8 @@ foreach($helper in Get-ChildItem -LiteralPath (Join-Path $root 'helpers\AIUsage'
 @{source=$root;commit=$commit;configuration='Release (lite)';configurationDirectory=$destinationPath;deployedAt=(Get-Date).ToString('o')} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $destinationPath '.deployment.json') -Encoding UTF8
 $proxy="param([string]`$Configuration='Release (lite)',[switch]`$Install)`r`n& '$root\build.ps1' -Configuration `$Configuration`r`nif(`$Install){ & '$root\deploy.ps1' -SkipBuild }`r`n"
 Set-Content -LiteralPath (Join-Path $destinationPath 'build.ps1') -Value $proxy -Encoding UTF8
+$readme=(Get-Content -LiteralPath (Join-Path $root 'install\README.md') -Raw -Encoding UTF8).Replace('{{SOURCE_DIR}}',$root)
+Set-Content -LiteralPath (Join-Path $destinationPath 'README.md') -Value $readme -Encoding UTF8
 if(!$NoStart) {Start-Process -FilePath $binary -WorkingDirectory $destinationPath -WindowStyle Hidden}
 Write-Host "Deployed Lite source commit $commit to $destinationPath"
 Write-Host "Program-directory configuration; backup: $backup"
