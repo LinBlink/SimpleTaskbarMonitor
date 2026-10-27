@@ -15,10 +15,15 @@ int main() {
     assert(AIUsageLayout::ColumnCount(L"AIUsageCodexSummary")==4);
     assert(AIUsageLayout::ColumnCount(L"AIUsageCursorSummary")==2);
     assert(AIUsageLayout::ColumnCount(L"BatteryPowerMon")==0);
-    for(int i=0;i<4;++i) {
-        assert(layout.columns[i].width >= measure(i==3?L"168.0h":i==1?L"99.9h":L"100%"));
-        if(i) assert(layout.columns[i].left==layout.columns[i-1].left+layout.columns[i-1].width+layout.columns[i-1].marker+layout.columns[i-1].separator);
-    }
+    assert(layout.columns[0].left==layout.columns[2].left);
+    assert(layout.columns[1].left==layout.columns[3].left);
+    assert(layout.columns[0].row==0 && layout.columns[2].row==1);
+    assert(layout.columns[1].width >= measure(L"168.0h"));
+    assert(layout.columns[0].left+layout.columns[0].width < layout.columns[1].left);
+    assert(layout.width < measure(L"100%*,5.0h*,100%*,168.0h*")*0.6);
+    auto cursorLayout=AIUsageLayout::MeasureColumns(2,measure,2);
+    assert(cursorLayout.columns[0].row==0 && cursorLayout.columns[1].row==1);
+    assert(cursorLayout.width>=measure(L"31.0d") && cursorLayout.width<layout.width);
     auto fields=AIUsageLayout::Split(L"17%,3.1h,54%*,100.1h*");
     assert(fields[0].text==L"17%" && !fields[0].stale);
     assert(fields[2].text==L"54%" && fields[2].stale);
@@ -63,6 +68,7 @@ int main() {
     for(auto feature:features) for(int i=0;auto item=feature->GetItem(i);++i) assert(ids.insert(item->GetItemId()).second);
     assert(!Builtin::IsAIResetHighlighted(nullptr,GetTickCount64()));
     assert(!Builtin::IsAIResetHighlighted(Builtin::Power()->GetItem(0),GetTickCount64()));
+    assert(Builtin::AIUsage()->GetItem(1)->IsDoubleLineExclusive());
     assert(ids.size()==11);assert(ids.count(L"AIUsageCodexSummary"));assert(ids.count(L"CustomDualCountdown"));assert(ids.count(L"b5R30ITQ"));assert(ids.count(L"BatteryPowerMon"));
     for(auto feature:features) feature->DataRequired();
     assert(std::wstring(Builtin::AIUsage()->GetItem(1)->GetItemValueText())==L"0%,--,--,--");

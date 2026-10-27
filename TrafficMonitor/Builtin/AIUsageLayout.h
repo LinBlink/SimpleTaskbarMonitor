@@ -9,24 +9,26 @@ inline int ColumnCount(const std::wstring& id) {
     if (id == L"AIUsageMiniMaxSummary" || id == L"AIUsageCodexSummary" || id == L"AIUsageClaudeSummary") return 4;
     return 0;
 }
-struct Column { int left{}, width{}, marker{}, separator{}; };
+struct Column { int left{}, width{}, row{}; };
 struct Layout { std::array<Column,4> columns{}; int count{}, width{}; };
-// Reserve the stale marker even for fresh data, so it never moves numbers.
+// Both quota periods share physical columns; stale indicators belong to the label.
 template<class Measure> Layout MeasureColumns(int count, Measure measure, int gap) {
     Layout result; result.count=count;
     int digit=0;
     for(wchar_t c=L'0';c<=L'9';++c) digit=(std::max)(digit,measure(std::wstring(1,c)));
-    for(int i=0;i<count;++i) {
-        auto& col=result.columns[i]; col.left=result.width;
-        col.width=(std::max)(measure(L"--"), i%2==0 ? digit*3+measure(L"%")
-            : digit*(i==3?4:3)+measure(i==1 && count==2 ? L".d" : L".h"));
-        col.marker=measure(L"*");
-        col.separator=i+1<count ? measure(L",")+gap : 0;
-        result.width+=col.width+col.marker+col.separator;
+    const int percent=(std::max)(measure(L"--"),digit*3+measure(L"%"));
+    const int time=(std::max)(measure(L"--"),digit*(count==2?3:4)+measure(count==2?L".d":L".h"));
+    if(count==2) {
+        result.width=(std::max)(percent,time);
+        result.columns[0]={0,result.width,0};
+        result.columns[1]={0,result.width,1};
+    } else if(count==4) {
+        result.width=percent+gap+time;
+        for(int i=0;i<4;++i) result.columns[i]={i%2?percent+gap:0,i%2?time:percent,i/2};
     }
     return result;
 }
-struct Value { std::wstring text; bool stale{}; };
+struct Value { std::wstring text=L"--"; bool stale{}; };
 inline std::array<Value,4> Split(const std::wstring& summary) {
     std::array<Value,4> result;
     size_t start=0;

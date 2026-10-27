@@ -369,6 +369,38 @@ void CTaskBarDlg::DrawPluginItem(IDrawCommon& drawer, IPluginItem* item, CRect r
         value_text_color = theApp.m_taskbar_data.text_colors.begin()->second.label;
     }
 
+    if (const int count = AIUsageLayout::ColumnCount(item->GetItemId()))
+    {
+        const auto layout = MeasureAIColumns(m_pDC, item->GetItemId(), DPI(2));
+        const auto values = AIUsageLayout::Split(item->GetItemValueText());
+        const int middle = rect.top + rect.Height() / 2;
+        CRect label_top{rect.left, rect.top, rect.left + label_width - DPI(4), middle};
+        CRect label_bottom{label_top.left, middle, label_top.right, rect.bottom};
+        drawer.DrawWindowText(label_top, theApp.m_taskbar_data.disp_str.GetConst(item).c_str(), label_text_color);
+        if (label_width > 0) drawer.DrawWindowText(label_bottom, count == 2 ? L"月" : L"周", label_text_color);
+        const int left = rect.left + label_width;
+        bool stale[2]{};
+        for (int i = 0; i < count; ++i)
+        {
+            const auto& col = layout.columns[i];
+            CRect cell{left + col.left, col.row ? middle : rect.top,
+                       left + col.left + col.width, col.row ? rect.bottom : middle};
+            drawer.DrawWindowText(cell, values[i].text.c_str(), value_text_color, IDrawCommon::Alignment::RIGHT);
+            stale[col.row] = stale[col.row] || values[i].stale;
+        }
+        for (int row = 0; row < 2; ++row)
+        {
+            if (stale[row] && label_width > 0)
+            {
+                const auto& label = row ? label_bottom : label_top;
+                CRect dot{label.right + DPI(1), label.CenterPoint().y,
+                          label.right + DPI(3), label.CenterPoint().y + DPI(2)};
+                drawer.FillRect(dot, RGB(255, 165, 0));
+            }
+        }
+        return;
+    }
+
     if (plugin != nullptr && plugin->GetAPIVersion() >= 2)
     {
         plugin->OnExtenedInfo(ITMPlugin::EI_DRAW_TASKBAR_WND, L"1");
@@ -432,27 +464,7 @@ void CTaskBarDlg::DrawPluginItem(IDrawCommon& drawer, IPluginItem* item, CRect r
         IDrawCommon::Alignment value_alignment{ theApp.m_taskbar_data.value_right_align ? IDrawCommon::Alignment::RIGHT : IDrawCommon::Alignment::LEFT };      //数值的对齐方式
         if (vertical)
             value_alignment = IDrawCommon::Alignment::CENTER;
-        if (AIUsageLayout::ColumnCount(item->GetItemId()))
-        {
-            const auto layout = MeasureAIColumns(m_pDC, item->GetItemId(), DPI(2));
-            const auto values = AIUsageLayout::Split(item->GetItemValueText());
-            // Anchor the entire table once; individual numbers have fixed right edges.
-            int left = rect_value.left;
-            if (vertical) left += (rect_value.Width() - layout.width) / 2;
-            else if (theApp.m_taskbar_data.value_right_align) left = rect_value.right - layout.width;
-            for (int i = 0; i < layout.count; ++i)
-            {
-                const auto& col = layout.columns[i];
-                CRect cell{left + col.left, rect_value.top, left + col.left + col.width, rect_value.bottom};
-                drawer.DrawWindowText(cell, values[i].text.c_str(), value_text_color, IDrawCommon::Alignment::RIGHT);
-                cell.left = cell.right; cell.right += col.marker;
-                if (values[i].stale) drawer.DrawWindowText(cell, L"*", value_text_color);
-                cell.left = cell.right; cell.right += col.separator;
-                if (i + 1 < layout.count) drawer.DrawWindowText(cell, L",", value_text_color);
-            }
-        }
-        else
-            drawer.DrawWindowText(rect_value, item->GetItemValueText(), value_text_color, value_alignment);
+        drawer.DrawWindowText(rect_value, item->GetItemValueText(), value_text_color, value_alignment);
     }
 }
 
@@ -798,7 +810,7 @@ void CTaskBarDlg::CalculateWindowSize()
     int ai_label_width = 0;
     for (int i = 0; auto item = Builtin::AIUsage()->GetItem(i); ++i)
         ai_label_width = max(ai_label_width, m_pDC->GetTextExtent(theApp.m_taskbar_data.disp_str.GetConst(item).c_str()).cx);
-    if (ai_label_width > 0) ai_label_width += DPI(2);
+    if (ai_label_width > 0) ai_label_width += DPI(4);
     //计算标签和数值的宽度
     //const auto& item_map = theApp.m_taskbar_data.disp_str.GetAllItems();
     for (auto iter = theApp.m_plugins.AllDisplayItemsWithPlugins().begin(); iter != theApp.m_plugins.AllDisplayItemsWithPlugins().end(); ++iter)
@@ -851,15 +863,16 @@ void CTaskBarDlg::CalculateWindowSize()
         }
     }
 
-    int item_count = static_cast<int>(m_item_widths.size());
-
     auto last_window_width{ m_window_width };
     auto last_window_height{ m_window_height };
 
     //计算窗口总宽度/高度和矩形区域
+    const bool has_ai = std::any_of(m_item_widths.begin(), m_item_widths.end(), [](const ItemWidthInfo& item) {
+        return item.IsPlugin() && AIUsageLayout::ColumnCount(item.PluginItem()->GetItemId());
+    });
     if (IsTasksbarOnTopOrBottom())  //任务栏在桌面的顶部或底部时
     {
-        if (!horizontal_arrange)
+        if (!horizontal_arrange || has_ai)
             m_window_height = TASKBAR_WND_HEIGHT;
         else
             m_window_height = TASKBAR_WND_HEIGHT * 2 / 3;
@@ -871,15 +884,15 @@ void CTaskBarDlg::CalculateWindowSize()
             int index = 0;
             for (auto iter = m_item_widths.begin(); iter != m_item_widths.end(); ++iter)
             {
-                m_window_width += iter->item_width.TotalWidth();
-                if (index > 0)
-                    item_rect.MoveToX(item_rect.right + DPI(theApp.m_taskbar_data.item_space));
+                const bool ai = iter->IsPlugin() && AIUsageLayout::ColumnCount(iter->PluginItem()->GetItemId());
+                const int gap = DPI(ai ? min(theApp.m_taskbar_data.item_space, 3) : theApp.m_taskbar_data.item_space);
+                if (index > 0) item_rect.MoveToX(item_rect.right + gap);
                 item_rect.right = item_rect.left + iter->item_width.TotalWidth();
                 item_rect.bottom = item_rect.top + m_window_height;
                 m_item_rects[*iter] = item_rect;
                 index++;
             }
-            m_window_width += DPI(theApp.m_taskbar_data.item_space) * item_count;   //加上每个标签间的空隙
+            m_window_width = item_rect.right + DPI(2);   // Keep a small trailing margin.
         }
         else        //非水平排列时，每两个一组排列
         {
@@ -912,11 +925,12 @@ void CTaskBarDlg::CalculateWindowSize()
                     }
 
                     // 处理当前的独占双行项目，单独成列，占两行
-                    int col_width = iter->item_width.MaxWidth();
+                    const bool ai = iter->IsPlugin() && AIUsageLayout::ColumnCount(iter->PluginItem()->GetItemId());
+                    int col_width = ai ? iter->item_width.TotalWidth() : iter->item_width.MaxWidth();
                     m_item_rects[*iter].SetRect(current_x, 0, current_x + col_width, m_window_height);
                     iter->is_double_line = true;
 
-                    current_x += col_width + item_space;
+                    current_x += col_width + (ai ? min(item_space, DPI(3)) : item_space);
                 }
                 else
                 {

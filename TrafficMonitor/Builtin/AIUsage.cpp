@@ -22,6 +22,7 @@ public:
     std::wstring value=L"--";
     Builtin::ResetAlert resetAlert;
     Item(const wchar_t* n,const wchar_t* i,const wchar_t* l):name(n),id(i),label(l){}
+    int IsDoubleLineExclusive() const override { return 1; }
     const wchar_t* GetItemName() const override { return name; }
     const wchar_t* GetItemId() const override { return id; }
     const wchar_t* GetItemLableText() const override { return label; }
@@ -63,7 +64,7 @@ public:
         ULARGE_INTEGER ticks{};ticks.LowPart=ft.dwLowDateTime;ticks.HighPart=ft.dwHighDateTime;
         const auto epoch=ticks.QuadPart/10000000ULL-11644473600ULL;
         GroupedUsage::Window windows[7];
-        tooltip=L"剩余额度，重置倒计时（* = 旧值；-- = 未知）\n";
+        tooltip=L"上行 5h，下行周额度；Cursor 上行剩余、下行月重置。标签旁圆点 = 旧值；-- = 未知。\n";
         for(int i=0;i<7;++i) {
             auto& window=windows[i];
             window.remaining=read(cache,keys[i],L"value",L"--");
