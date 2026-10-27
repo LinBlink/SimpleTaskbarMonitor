@@ -15,6 +15,7 @@
 #include "IniHelper.h"
 #include "LinkStatic.h"
 #include "AdapterCommon.h"
+#include "IfTableSnapshot.h"
 #include "AboutDlg.h"
 #include "PdhHardwareQuery/CPUUsage.h"
 #include "PdhHardwareQuery/CpuFreq.h"
@@ -60,7 +61,7 @@ protected:
 
     vector<NetWorkConection> m_connections; //保存获取到的要显示到“选择网卡”菜单项中的所有网络连接
     MIB_IFTABLE* m_pIfTable{ nullptr };
-    DWORD m_dwSize{};	//m_pIfTable的大小
+    CIfTableSnapshot m_if_table;
     int m_connection_selected{ 0 }; //要显示流量的连接的序号
     unsigned __int64 m_in_bytes{};        //当前已接收的字节数
     unsigned __int64 m_out_bytes{};   //当前已发送的字节数
@@ -97,6 +98,7 @@ protected:
 
     string m_connection_name_preferd{ theApp.m_cfg_data.m_connection_name };          //保存用户手动选择的网络连接名称
 
+    void DoNetworkAcquisition();
     void DoMonitorAcquisition();    //获取一次监控信息
     static UINT MonitorThreadCallback(LPVOID dwUser);   //获取监控信息的线程函数
     std::atomic_bool m_monitor_data_required{ false };          //线程中需要获取监控数据标志，当需要获取监控数据时置为true，获取到一次监控数据时置为false
@@ -111,7 +113,7 @@ protected:
 
     void AutoSelect();
     //自动选择连接
-    void IniConnection();   //初始化连接
+    void IniConnection(bool refresh = true);   //初始化连接
 
     MIB_IFROW GetConnectIfTable(int connection_index);    //获取当前选择的网络连接的MIB_IFROW对象。connection_index为m_connections中的索引
     NetWorkConection GetConnection(int connection_index); //获取当前选择的网络连接的NetWorkConection对象。connection_index为m_connections中的索引

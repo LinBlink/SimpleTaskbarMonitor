@@ -1,6 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="Builtin\AIUsage.cpp"><Filter>源文件和头文件</Filter></ClCompile>
+    <ClCompile Include="Builtin\BuiltinFeatures.cpp"><Filter>源文件和头文件</Filter></ClCompile>
+    <ClCompile Include="Builtin\DualCountdown.cpp"><Filter>源文件和头文件</Filter></ClCompile>
+    <ClCompile Include="Builtin\Power.cpp"><Filter>源文件和头文件</Filter></ClCompile>
+    <ClInclude Include="IfTableSnapshot.h"><Filter>源文件和头文件</Filter></ClInclude>
+    <ClInclude Include="Builtin\BuiltinFeatures.h"><Filter>源文件和头文件</Filter></ClInclude>
+    <ClInclude Include="Builtin\BuiltinResource.h"><Filter>源文件和头文件</Filter></ClInclude>
+    <ClInclude Include="Builtin\DateMath.h"><Filter>源文件和头文件</Filter></ClInclude>
+    <ClInclude Include="Builtin\PowerValues.h"><Filter>源文件和头文件</Filter></ClInclude>
+    <ClInclude Include="Builtin\ResetHours.h"><Filter>源文件和头文件</Filter></ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <Filter Include="资源文件">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>

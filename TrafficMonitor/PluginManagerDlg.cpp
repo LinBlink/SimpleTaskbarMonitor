@@ -86,7 +86,6 @@ BEGIN_MESSAGE_MAP(CPluginManagerDlg, CBaseDialog)
     ON_WM_INITMENU()
     ON_COMMAND(ID_PLUGIN_DETAIL, &CPluginManagerDlg::OnPluginDetail)
     ON_COMMAND(ID_PLUGIN_OPTIONS, &CPluginManagerDlg::OnPluginOptions)
-    ON_COMMAND(ID_PLUGIN_DISABLE, &CPluginManagerDlg::OnPluginDisable)
     ON_MESSAGE(WM_LINK_CLICKED, &CPluginManagerDlg::OnLinkClicked)
 END_MESSAGE_MAP()
 
@@ -172,11 +171,9 @@ BOOL CPluginManagerDlg::OnInitDialog()
         m_list_ctrl.SetItemText(index, COL_STATUS, status);
     }
 
-    if (theApp.m_str_table.IsSimplifiedChinese())   //简体中文用户跳转到Gitee的链接
-        m_plugin_download_lnk.SetURL(L"https://gitee.com/zhongyang219/TrafficMonitorPlugins/blob/main/download/plugin_download.md");
-    else //跳转到GitHub的链接
-        m_plugin_download_lnk.SetURL(L"https://github.com/zhongyang219/TrafficMonitorPlugins/blob/main/download/plugin_download.md");
-    m_plugin_dev_guide_lnk.SetURL(L"https://github.com/zhongyang219/TrafficMonitor/wiki/%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97");
+    // Features are part of the executable; there is no external plugin catalog.
+    m_plugin_download_lnk.ShowWindow(SW_HIDE);
+    m_plugin_dev_guide_lnk.ShowWindow(SW_HIDE);
     m_open_plugin_dir_lnk.SetLinkIsURL(false);
 
     EnableControl();
@@ -210,7 +207,7 @@ void CPluginManagerDlg::OnNMRClickList1(NMHDR* pNMHDR, LRESULT* pResult)
     if (m_item_selected >= 0 && m_item_selected < static_cast<int>(theApp.m_plugins.GetPlugins().size()))
     {
         auto plugin_info = theApp.m_plugins.GetPlugins()[m_item_selected];
-        theApp.UpdatePluginMenu(pContextMenu, plugin_info.plugin, 3);
+        theApp.UpdatePluginMenu(pContextMenu, plugin_info.plugin, 2);
     }
 
     CPoint point1;	//定义一个用于确定光标位置的位置
@@ -242,8 +239,8 @@ void CPluginManagerDlg::OnBnClickedOptinsButton()
             ITMPlugin::OptionReturn rtn = plugin_info.plugin->ShowOptionsDialog(m_hWnd);
             if (rtn == ITMPlugin::OR_OPTION_NOT_PROVIDED)
                 MessageBox(CCommon::LoadText(IDS_PLUGIN_NO_OPTIONS_INFO), nullptr, MB_ICONINFORMATION | MB_OK);
-            //else if (rtn == ITMPlugin::OR_OPTION_CHANGED)
-            //    theApp.m_pMainWnd->SendMessage(WM_REOPEN_TASKBAR_WND);
+            else if (rtn == ITMPlugin::OR_OPTION_CHANGED)
+                theApp.m_pMainWnd->PostMessage(WM_REOPEN_TASKBAR_WND);
         }
     }
 }
@@ -278,17 +275,7 @@ void CPluginManagerDlg::OnInitMenu(CMenu* pMenu)
     bool enable{ IsSelectedPluginEnable() };
     pMenu->EnableMenuItem(ID_PLUGIN_DETAIL, MF_BYCOMMAND | (enable ? MF_ENABLED : MF_GRAYED));
     pMenu->EnableMenuItem(ID_PLUGIN_OPTIONS, MF_BYCOMMAND | (enable ? MF_ENABLED : MF_GRAYED));
-    pMenu->EnableMenuItem(ID_PLUGIN_DISABLE, MF_BYCOMMAND | (IsSelectedValid() ? MF_ENABLED : MF_GRAYED));
 
-    bool disabled{};
-    CPluginManager::PluginInfo plugin_info;
-    if (m_item_selected >= 0 && m_item_selected < static_cast<int>(theApp.m_plugins.GetPlugins().size()))
-    {
-        plugin_info = theApp.m_plugins.GetPlugins()[m_item_selected];
-        std::wstring file_name = CFilePathHelper(plugin_info.file_path).GetFileName();
-        disabled = theApp.m_cfg_data.plugin_disabled.Contains(file_name);
-    }
-    pMenu->CheckMenuItem(ID_PLUGIN_DISABLE, MF_BYCOMMAND | (disabled ? MF_CHECKED : MF_UNCHECKED));
 }
 
 
@@ -301,19 +288,6 @@ void CPluginManagerDlg::OnPluginDetail()
 void CPluginManagerDlg::OnPluginOptions()
 {
     OnBnClickedOptinsButton();
-}
-
-
-void CPluginManagerDlg::OnPluginDisable()
-{
-    if (m_item_selected >= 0 && m_item_selected < static_cast<int>(theApp.m_plugins.GetPlugins().size()))
-    {
-        CPluginManager::PluginInfo plugin_info = theApp.m_plugins.GetPlugins()[m_item_selected];
-        std::wstring file_name = CFilePathHelper(plugin_info.file_path).GetFileName();
-        bool disabled = theApp.m_cfg_data.plugin_disabled.Contains(file_name);
-        theApp.m_cfg_data.plugin_disabled.SetStrContained(file_name, !disabled);
-        MessageBox(CCommon::LoadText(IDS_RESTART_TO_APPLY_CHANGE_INFO), nullptr, MB_OK | MB_ICONINFORMATION);
-    }
 }
 
 

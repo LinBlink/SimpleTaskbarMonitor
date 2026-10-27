@@ -14,6 +14,7 @@
 #include "Win11TaskbarDlg.h"
 #include "WineTaskbarDlg.h"
 #include "TaskbarHelper.h"
+#include "Builtin/BuiltinFeatures.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,7 +43,6 @@ CTaskbarCore::CTaskbarCore(CWnd* pParent /*=NULL*/)
 
 CTaskbarCore::~CTaskbarCore()
 {
-    free(m_pIfTable);
 
     if (m_tBarDlg != nullptr)
     {
@@ -148,20 +148,11 @@ void CTaskbarCore::AutoSelect()
     m_connection_change_flag = true;
 }
 
-void CTaskbarCore::IniConnection()
+void CTaskbarCore::IniConnection(bool refresh)
 {
-    //为m_pIfTable开辟所需大小的内存
-    free(m_pIfTable);
-    m_dwSize = sizeof(MIB_IFTABLE);
-    m_pIfTable = (MIB_IFTABLE*)malloc(m_dwSize);
-    int rtn;
-    rtn = GetIfTable(m_pIfTable, &m_dwSize, FALSE);
-    if (rtn == ERROR_INSUFFICIENT_BUFFER)	//如果函数返回值为ERROR_INSUFFICIENT_BUFFER，说明m_pIfTable的大小不够
-    {
-        free(m_pIfTable);
-        m_pIfTable = (MIB_IFTABLE*)malloc(m_dwSize);	//用新的大小重新开辟一块内存
-    }
-    GetIfTable(m_pIfTable, &m_dwSize, FALSE);
+    if (refresh)
+        m_if_table.Refresh();
+    m_pIfTable = m_if_table.Get();
 
     //获取当前所有的连接，并保存到m_connections容器中
     if (!theApp.m_general_data.show_all_interface)
@@ -679,31 +670,20 @@ static int GetMonitorTimerCount(int second)
 }
 
 
-void CTaskbarCore::DoMonitorAcquisition()
+void CTaskbarCore::DoNetworkAcquisition()
 {
-    //获取网络连接速度
-    int rtn{};
-    auto getLfTable = [&]() {
-        __try
-        {
-            rtn = GetIfTable(m_pIfTable, &m_dwSize, FALSE);
-        }
-        __except (EXCEPTION_EXECUTE_HANDLER)
-        {
-            free(m_pIfTable);
-            m_dwSize = sizeof(MIB_IFTABLE);
-            m_pIfTable = (MIB_IFTABLE*)malloc(m_dwSize);
-            rtn = GetIfTable(m_pIfTable, &m_dwSize, FALSE);
-            if (rtn == ERROR_INSUFFICIENT_BUFFER)	//如果函数返回值为ERROR_INSUFFICIENT_BUFFER，说明m_pIfTable的大小不够
-            {
-                free(m_pIfTable);
-                m_pIfTable = (MIB_IFTABLE*)malloc(m_dwSize);	//用新的大小重新开辟一块内存
-            }
-            GetIfTable(m_pIfTable, &m_dwSize, FALSE);
-        }
-    };
-
-    getLfTable();
+    if (m_menu_popuped) return;
+    const bool valid = m_if_table.Refresh();
+    m_pIfTable = m_if_table.Get();
+    if (m_if_table.Changed())
+        IniConnection(false);
+    if (!valid)
+    {
+        theApp.m_in_speed = theApp.m_out_speed = 0;
+        m_last_in_bytes = m_last_out_bytes = 0;
+        m_connection_change_flag = true;
+        return;
+    }
 
     if (!theApp.m_cfg_data.m_select_all)        //获取当前选中连接的网速
     {
@@ -748,10 +728,10 @@ void CTaskbarCore::DoMonitorAcquisition()
 
     //计算两次获取网速的时间间隔
     static ULONGLONG last_net_speed_time = 0;
-    ULONGLONG net_speed_time = CCommon::GetCurrentTimeSinceEpochMilliseconds();
+    ULONGLONG net_speed_time = GetTickCount64();
     int time_span = theApp.m_general_data.monitor_time_span;
     if (last_net_speed_time != 0)
-        time_span = static_cast<int>(net_speed_time - last_net_speed_time);
+        time_span = static_cast<int>((std::max)(ULONGLONG(1), net_speed_time - last_net_speed_time));
     last_net_speed_time = net_speed_time;
 
     //将当前监控时间间隔的流量转换成每秒时间间隔内的流量
@@ -793,57 +773,11 @@ void CTaskbarCore::DoMonitorAcquisition()
     theApp.m_today_up_traffic += cur_out_speed;
     theApp.m_today_down_traffic += cur_in_speed;
 
-    if (rtn == ERROR_INSUFFICIENT_BUFFER)
-    {
-        IniConnection();
-        CString info = CCommon::LoadText(IDS_INSUFFICIENT_BUFFER);
-        info.Replace(_T("<%cnt%>"), CCommon::IntToString(m_restart_cnt));
-        CCommon::WriteLog(info, theApp.m_log_path.c_str());
-    }
+    // Network selection, menus and snapshots are owned by the UI thread.
+}
 
-    if (m_monitor_time_cnt % GetMonitorTimerCount(3) == GetMonitorTimerCount(3) - 1)
-    {
-        //重新获取当前连接数量
-        static DWORD last_interface_num = -1;
-        DWORD interface_num;
-        GetNumberOfInterfaces(&interface_num);
-        if (last_interface_num != -1 && interface_num != last_interface_num)    //如果连接数发生变化，则重新初始化连接
-        {
-            if (theApp.m_debug_log)
-            {
-                CString info = CCommon::LoadText(IDS_CONNECTION_NUM_CHANGED);
-                info.Replace(_T("<%before%>"), CCommon::IntToString(last_interface_num));
-                info.Replace(_T("<%after%>"), CCommon::IntToString(interface_num));
-                info.Replace(_T("<%cnt%>"), CCommon::IntToString(m_restart_cnt + 1));
-                CCommon::WriteLog(info, theApp.m_log_path.c_str());
-            }
-            IniConnection();
-            last_interface_num = interface_num;
-        }
-
-        string descr;
-        descr = (const char*)GetConnectIfTable(m_connection_selected).bDescr;
-        if (descr != theApp.m_cfg_data.m_connection_name)
-        {
-            //写入额外的调试信息
-            if (theApp.m_debug_log)
-            {
-                CString log_str;
-                log_str = _T("连接名称不匹配：\r\n");
-                log_str += _T("IfTable description: ");
-                log_str += descr.c_str();
-                log_str += _T("\r\nm_connection_name: ");
-                log_str += theApp.m_cfg_data.m_connection_name.c_str();
-                CCommon::WriteLog(log_str, (theApp.m_config_dir + L".\\connections.log").c_str());
-            }
-
-            IniConnection();
-            CString info = CCommon::LoadText(IDS_CONNECTION_NOT_MATCH);
-            info.Replace(_T("<%cnt%>"), CCommon::IntToString(m_restart_cnt));
-            CCommon::WriteLog(info, theApp.m_log_path.c_str());
-        }
-    }
-
+void CTaskbarCore::DoMonitorAcquisition()
+{
     bool lite_version = false;
 #ifdef WITHOUT_TEMPERATURE
     lite_version = true;
@@ -999,27 +933,7 @@ void CTaskbarCore::DoMonitorAcquisition()
     }
 #endif
 
-    //通知插件获取数据，以及向插件传递监控数据
-    for (const auto& plugin_info : theApp.m_plugins.GetPlugins())
-    {
-        if (plugin_info.plugin != nullptr)
-        {
-            plugin_info.plugin->DataRequired();
-            ITMPlugin::MonitorInfo monitor_info;
-            monitor_info.up_speed = theApp.m_out_speed;
-            monitor_info.down_speed = theApp.m_in_speed;
-            monitor_info.cpu_usage = theApp.m_cpu_usage;
-            monitor_info.memory_usage = theApp.m_memory_usage;
-            monitor_info.gpu_usage = theApp.m_gpu_usage;
-            monitor_info.hdd_usage = theApp.m_hdd_usage;
-            monitor_info.cpu_temperature = theApp.m_cpu_temperature;
-            monitor_info.gpu_temperature = theApp.m_gpu_temperature;
-            monitor_info.hdd_temperature = theApp.m_hdd_temperature;
-            monitor_info.cpu_freq = theApp.m_cpu_freq;
-            monitor_info.main_board_temperature = theApp.m_main_board_temperature;
-            plugin_info.plugin->OnMonitorInfo(monitor_info);
-        }
-    }
+    Builtin::SampleHardware();
 
     m_monitor_time_cnt++;
 
@@ -1076,7 +990,8 @@ void CTaskbarCore::OnTimer(UINT_PTR nIDEvent)
     // TODO: 在此添加消息处理程序代码和/或调用默认值
     if (nIDEvent == MONITOR_TIMER)
     {
-        //通知线程获取监控数据
+        DoNetworkAcquisition();
+        //通知线程获取硬件监控数据
         m_monitor_data_required = true;
     }
 
@@ -1493,7 +1408,9 @@ afx_msg LRESULT CTaskbarCore::OnNotifyIcon(WPARAM wParam, LPARAM lParam)
             if (pMenu != nullptr)
             {
                 pMenu->SetDefaultItem(-1);       //设置没有默认菜单项
+                m_menu_popuped = true;
                 pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point1.x, point1.y, this); //在指定位置显示弹出菜单
+                m_menu_popuped = false;
             }
         }
     }
@@ -1644,6 +1561,7 @@ void CTaskbarCore::OnChangeNotifyIcon()
 
 afx_msg LRESULT CTaskbarCore::OnTaskbarMenuPopedUp(WPARAM wParam, LPARAM lParam)
 {
+    m_menu_popuped = true;
     //设置“选择连接”子菜单项中各单选项的选择状态
     SetConnectionMenuState(theApp.m_taskbar_menu.GetSubMenu(0)->GetSubMenu(0));
     SetConnectionMenuState(theApp.m_taskbar_menu_plugin.GetSubMenu(0)->GetSubMenu(0));
@@ -1725,6 +1643,28 @@ afx_msg LRESULT CTaskbarCore::OnDpichanged(WPARAM wParam, LPARAM lParam)
 
 afx_msg LRESULT CTaskbarCore::OnMonitorInfoUpdated(WPARAM wParam, LPARAM lParam)
 {
+    //通知插件获取数据，以及向插件传递监控数据
+    for (const auto& plugin_info : theApp.m_plugins.GetPlugins())
+    {
+        if (plugin_info.plugin != nullptr)
+        {
+            plugin_info.plugin->DataRequired();
+            ITMPlugin::MonitorInfo monitor_info;
+            monitor_info.up_speed = theApp.m_out_speed;
+            monitor_info.down_speed = theApp.m_in_speed;
+            monitor_info.cpu_usage = theApp.m_cpu_usage;
+            monitor_info.memory_usage = theApp.m_memory_usage;
+            monitor_info.gpu_usage = theApp.m_gpu_usage;
+            monitor_info.hdd_usage = theApp.m_hdd_usage;
+            monitor_info.cpu_temperature = theApp.m_cpu_temperature;
+            monitor_info.gpu_temperature = theApp.m_gpu_temperature;
+            monitor_info.hdd_temperature = theApp.m_hdd_temperature;
+            monitor_info.cpu_freq = theApp.m_cpu_freq;
+            monitor_info.main_board_temperature = theApp.m_main_board_temperature;
+            plugin_info.plugin->OnMonitorInfo(monitor_info);
+        }
+    }
+
     //更新任务栏窗口鼠标提示
     if (IsTaskbarWndValid())
         m_tBarDlg->UpdateToolTips();

@@ -771,6 +771,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\PluginInterface.h" />
+    <ClInclude Include="IfTableSnapshot.h" />
+    <ClInclude Include="Builtin\BuiltinFeatures.h" />
+    <ClInclude Include="Builtin\BuiltinResource.h" />
+    <ClInclude Include="Builtin\DateMath.h" />
+    <ClInclude Include="Builtin\PowerValues.h" />
+    <ClInclude Include="Builtin\ResetHours.h" />
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="CAutoAdaptSettingsDlg.h" />
     <ClInclude Include="AdapterCommon.h" />
@@ -854,6 +860,22 @@
     <ClInclude Include="WinVersionHelper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Builtin\BuiltinFeatures.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="Builtin\AIUsage.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="Builtin\DualCountdown.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="Builtin\Power.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="CAutoAdaptSettingsDlg.cpp" />
     <ClCompile Include="AdapterCommon.cpp" />

@@ -34,6 +34,7 @@ void CAdapterCommon::GetAdapterInfo(vector<NetWorkConection>& adapters)
 		while (pIpAdapterInfo)
 		{
 			NetWorkConection connection;
+			connection.interface_index = pIpAdapterInfo->Index;
 			connection.description = pIpAdapterInfo->Description;
 			connection.ip_address = CCommon::StrToUnicode(pIpAdapterInfo->IpAddressList.IpAddress.String);
 			connection.subnet_mask = CCommon::StrToUnicode(pIpAdapterInfo->IpAddressList.IpMask.String);
@@ -81,14 +82,25 @@ void CAdapterCommon::GetIfTableInfo(vector<NetWorkConection>& adapters, MIB_IFTA
 	{
 		if (adapters[i].description.empty())
 			continue;
-		int index;
-		index = FindConnectionInIfTable(adapters[i].description, pIfTable);
-		if (index == -1)		//如果使用精确匹配的方式没有找到，则采用模糊匹配的方式再查找一次
-			index = FindConnectionInIfTableFuzzy(adapters[i].description, pIfTable);
+        int index = -1;
+        for (DWORD row = 0; pIfTable != nullptr && row < pIfTable->dwNumEntries; ++row)
+        {
+            if (adapters[i].interface_index != 0 && pIfTable->table[row].dwIndex == adapters[i].interface_index)
+            {
+                index = static_cast<int>(row);
+                break;
+            }
+        }
 		//if (index != -1)
 		//{
 		adapters[i].index = index;
-		adapters[i].in_bytes = pIfTable->table[index].dwInOctets;
+		if (pIfTable == nullptr || index < 0 || static_cast<DWORD>(index) >= pIfTable->dwNumEntries)
+        {
+            adapters[i].in_bytes = adapters[i].out_bytes = 0;
+            adapters[i].description_2.clear();
+            continue;
+        }
+        adapters[i].in_bytes = pIfTable->table[index].dwInOctets;
 		adapters[i].out_bytes = pIfTable->table[index].dwOutOctets;
 		adapters[i].description_2 = (const char*)pIfTable->table[index].bDescr;
 		//}
@@ -100,11 +112,12 @@ void CAdapterCommon::GetAllIfTableInfo(vector<NetWorkConection>& adapters, MIB_I
 	vector<NetWorkConection> adapters_tmp;
 	GetAdapterInfo(adapters_tmp);		//获取IP地址
 	adapters.clear();
-	for (size_t i{}; i < pIfTable->dwNumEntries; i++)
+	for (size_t i{}; pIfTable != nullptr && i < pIfTable->dwNumEntries; i++)
 	{
 		NetWorkConection connection;
 		connection.description = connection.description_2 = (const char*)pIfTable->table[i].bDescr;
-		connection.index = i;
+		connection.index = static_cast<int>(i);
+        connection.interface_index = pIfTable->table[i].dwIndex;
 		connection.in_bytes = pIfTable->table[i].dwInOctets;
 		connection.out_bytes = pIfTable->table[i].dwOutOctets;
 		for (size_t j{}; j < adapters_tmp.size(); j++)
@@ -123,7 +136,7 @@ void CAdapterCommon::GetAllIfTableInfo(vector<NetWorkConection>& adapters, MIB_I
 
 int CAdapterCommon::FindConnectionInIfTable(string connection, MIB_IFTABLE* pIfTable)
 {
-	for (size_t i{}; i < pIfTable->dwNumEntries; i++)
+	for (size_t i{}; pIfTable != nullptr && i < pIfTable->dwNumEntries; i++)
 	{
 		string descr = (const char*)pIfTable->table[i].bDescr;
 		if (descr == connection)
@@ -134,7 +147,7 @@ int CAdapterCommon::FindConnectionInIfTable(string connection, MIB_IFTABLE* pIfT
 
 int CAdapterCommon::FindConnectionInIfTableFuzzy(string connection, MIB_IFTABLE* pIfTable)
 {
-	for (size_t i{}; i < pIfTable->dwNumEntries; i++)
+	for (size_t i{}; pIfTable != nullptr && i < pIfTable->dwNumEntries; i++)
 	{
 		string descr = (const char*)pIfTable->table[i].bDescr;
 		size_t index;
@@ -148,8 +161,8 @@ int CAdapterCommon::FindConnectionInIfTableFuzzy(string connection, MIB_IFTABLE*
 	}
 	//如果还是没有找到，则使用字符串匹配算法查找
 	double max_degree{};
-	int best_index{};
-	for (size_t i{}; i < pIfTable->dwNumEntries; i++)
+	int best_index{ -1 };
+	for (size_t i{}; pIfTable != nullptr && i < pIfTable->dwNumEntries; i++)
 	{
 		string descr = (const char*)pIfTable->table[i].bDescr;
 		double degree = CCommon::StringSimilarDegree_LD(descr, connection);

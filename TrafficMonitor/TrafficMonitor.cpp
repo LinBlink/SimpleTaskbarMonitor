@@ -607,7 +607,7 @@ void CTrafficMonitorApp::InitMenuResourse()
     CMenuIcon::AddIconToMenuItem(m_taskbar_menu_plugin_sub_menu.GetSafeHmenu(), ID_PLUGIN_DETAIL_TASKBAR, FALSE, GetMenuIcon(IDI_INFO));
     CMenu* taskbar_menu_plugin = m_taskbar_menu_plugin.GetSubMenu(0);
     taskbar_menu_plugin->AppendMenu(MF_SEPARATOR);
-    taskbar_menu_plugin->AppendMenu(MF_POPUP | MF_STRING, (UINT)m_taskbar_menu_plugin_sub_menu.m_hMenu, _T("<plugin name>"));
+    taskbar_menu_plugin->AppendMenu(MF_POPUP | MF_STRING, (UINT_PTR)m_taskbar_menu_plugin_sub_menu.m_hMenu, _T("<plugin name>"));
 
     //为菜单项添加图标
     //任务栏窗口右键菜单

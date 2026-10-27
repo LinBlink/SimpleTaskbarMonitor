@@ -1466,6 +1466,7 @@ void CTaskBarDlg::OnLButtonUp(UINT nFlags, CPoint point)
 afx_msg LRESULT CTaskBarDlg::OnExitmenuloop(WPARAM wParam, LPARAM lParam)
 {
     m_menu_popuped = false;
+    theApp.m_pMainWnd->PostMessage(WM_EXITMENULOOP);
     return 0;
 }
 

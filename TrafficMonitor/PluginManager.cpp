@@ -8,6 +8,7 @@
 #include <string.h>
 #include "DrawTextManager.h"
 #include "PluginManager.h"
+#include "Builtin/BuiltinFeatures.h"
 #include "Common.h"
 #include "TrafficMonitor.h"
 
@@ -19,9 +20,7 @@ CPluginManager::CPluginManager()
 
 CPluginManager::~CPluginManager()
 {
-    //卸载插件
-    for (const auto& m : m_modules)
-        FreeLibrary(m.plugin_module);
+
 }
 
 static wstring WcharArrayToWString(const wchar_t* str)
@@ -34,91 +33,26 @@ static wstring WcharArrayToWString(const wchar_t* str)
 
 void CPluginManager::LoadPlugins()
 {
-    //从plugins目录下加载插件
-    wstring plugin_dir;
-    plugin_dir = CCommon::GetModuleDir() + L"plugins";
-    vector<wstring> plugin_files;
-    CCommon::GetFiles((plugin_dir + L"\\*.dll").c_str(), plugin_files);		//获取Plugins目录下所有的dll文件的文件名
-    for (const auto& file : plugin_files)
+    const wchar_t* names[] = {L"AIUsage",L"DualCountdown",L"Battery",L"Power"};
+    auto features = Builtin::Features();
+    for (size_t i = 0; i < features.size(); ++i)
     {
-        //插件信息
-        m_modules.push_back(PluginInfo());
-        PluginInfo& plugin_info{ m_modules.back() };
-        //插件dll的路径
-        plugin_info.file_path = plugin_dir + file;
-        //插件文件名
-        std::wstring file_name{ file };
-        if (!file_name.empty() && (file_name[0] == L'\\' || file_name[0] == L'/'))
-            file_name = file_name.substr(1);
-        //如果插件被禁用，则不加载插件
-        if (theApp.m_cfg_data.plugin_disabled.Contains(file_name))
+        m_modules.emplace_back();
+        auto& info = m_modules.back();
+        info.file_path = std::wstring(L"Builtin\\") + names[i];
+        info.plugin = features[i];
+        info.state = PluginState::PS_SUCCEED;
+        info.plugin->OnInitialize(&theApp);
+        for (int property = 0; property < ITMPlugin::TMI_MAX; ++property)
         {
-            plugin_info.state = PluginState::PS_DISABLE;
-            continue;
+            auto key = static_cast<ITMPlugin::PluginInfoIndex>(property);
+            info.properties[key] = WcharArrayToWString(info.plugin->GetInfo(key));
         }
-        //载入dll
-        plugin_info.plugin_module = LoadLibrary(plugin_info.file_path.c_str());
-        if (plugin_info.plugin_module == NULL)
+        for (int itemIndex = 0; auto item = info.plugin->GetItem(itemIndex); ++itemIndex)
         {
-            plugin_info.state = PluginState::PS_MUDULE_LOAD_FAILED;
-            plugin_info.error_code = GetLastError();
-            continue;
-        }
-        // hook插件导入的User32.dll下的DrawText系列函数
-        ReplacePluginDrawTextFunction(plugin_info.plugin_module);
-        //获取函数的入口地址
-        pfTMPluginGetInstance TMPluginGetInstance = (pfTMPluginGetInstance)::GetProcAddress(plugin_info.plugin_module, "TMPluginGetInstance");
-        if (TMPluginGetInstance == NULL)
-        {
-            plugin_info.state = PluginState::PS_FUNCTION_GET_FAILED;
-            plugin_info.error_code = GetLastError();
-            continue;
-        }
-        //创建插件对象
-        plugin_info.plugin = TMPluginGetInstance();
-        if (plugin_info.plugin == nullptr)
-            continue;
-        //检查插件版本
-        int version = plugin_info.plugin->GetAPIVersion();
-        if (version <= PLUGIN_UNSUPPORT_VERSION)
-        {
-            plugin_info.state = PluginState::PS_VERSION_NOT_SUPPORT;
-            continue;
-        }
-
-        //调用初始化函数
-        if (version >= 7)
-        {
-            plugin_info.plugin->OnInitialize(&theApp);
-        }
-
-        //向插件传递配置文件的路径
-        std::wstring config_dir = theApp.m_config_dir;
-        config_dir += L"plugins\\";
-        if (version >= 2)
-        {
-            CreateDirectory(config_dir.c_str(), NULL);       //如果plugins不存在，则创建它
-            plugin_info.plugin->OnExtenedInfo(ITMPlugin::EI_CONFIG_DIR, config_dir.c_str());
-        }
-
-        //获取插件信息
-        for (int i{}; i < ITMPlugin::TMI_MAX; i++)
-        {
-            ITMPlugin::PluginInfoIndex index{ static_cast<ITMPlugin::PluginInfoIndex>(i) };
-            plugin_info.properties[index] = WcharArrayToWString(plugin_info.plugin->GetInfo(index));
-        }
-
-        //获取插件显示项目
-        int index = 0;
-        while (true)
-        {
-            IPluginItem* item = plugin_info.plugin->GetItem(index);
-            if (item == nullptr)
-                break;
-            plugin_info.plugin_items.push_back(item);
+            info.plugin_items.push_back(item);
             m_plugins.push_back(item);
-            m_plguin_item_map[item] = plugin_info.plugin;
-            index++;
+            m_plguin_item_map[item] = info.plugin;
         }
     }
     // hook MFC导入的User32.dll下的DrawText系列函数

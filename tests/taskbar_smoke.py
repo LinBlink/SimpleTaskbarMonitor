@@ -73,6 +73,22 @@ for mode in ['core','display']:
             assert u.SendMessageW(tabs[0][0],0x1304,0,0)==2, 'Expected exactly two options tabs'
             assert u.SendMessageW(tabs[0][0],0x130B,0,0)==0, 'Taskbar settings must be selected'
             u.PostMessageW(opts[0],0x111,2,0); time.sleep(.5)
+            feature_id=int(re.search(r'#define ID_PLUGIN_MANAGE\s+(\d+)',header)[1])
+            refresh_id=int(re.search(r'#define ID_REFRESH_CONNECTION_LIST\s+(\d+)',header)[1])
+            # Rebuild network menus repeatedly while the monitor thread is active.
+            for _ in range(12):
+                u.PostMessageW(core[0],0x111,refresh_id,0)
+                time.sleep(.05)
+            u.PostMessageW(core[0],0x111,feature_id,0)
+            deadline=time.monotonic()+15
+            while True:
+                lists=[x for x in windows(p.pid) if x[1]=='SysListView32' and x[3]]
+                if lists or time.monotonic()>deadline or p.poll() is not None: break
+                time.sleep(.2)
+            assert lists, 'Built-in features dialog did not open'
+            assert u.SendMessageW(lists[0][0],0x1004,0,0)==4, 'Expected exactly four built-in features'
+            u.PostMessageW(u.GetParent(lists[0][0]),0x111,2,0)
+            time.sleep(.5)
         u.PostMessageW(core[0] if mode=='core' else display[0],0x10,0,0)
         code=p.wait(timeout=10)
         assert code==0, f'Exit failed: {code}'
