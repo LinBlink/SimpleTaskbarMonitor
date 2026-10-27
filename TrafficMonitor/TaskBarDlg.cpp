@@ -49,6 +49,7 @@ BEGIN_MESSAGE_MAP(CTaskBarDlg, CDialogEx)
     ON_WM_TIMER()
     ON_WM_PAINT()
     ON_WM_CLOSE()
+    ON_WM_DESTROY()
     ON_WM_LBUTTONUP()
     ON_MESSAGE(WM_EXITMENULOOP, &CTaskBarDlg::OnExitmenuloop)
     ON_MESSAGE(WM_TABLET_QUERYSYSTEMGESTURESTATUS, &CTaskBarDlg::OnTabletQuerysystemgesturestatus)
@@ -732,6 +733,8 @@ void CTaskBarDlg::SetTextFont()
     //如果m_font已经关联了一个字体资源对象，则释放它
     if (m_font.m_hObject)
     {
+        if (m_pDC != nullptr)
+            m_pDC->SelectStockObject(SYSTEM_FONT);
         m_font.DeleteObject();
     }
     //创建新的字体
@@ -1005,7 +1008,8 @@ BOOL CTaskBarDlg::OnInitDialog()
     //设置隐藏任务栏图标
     ModifyStyleEx(0, WS_EX_TOOLWINDOW);
 
-    m_pDC = GetDC();
+    m_measure_dc.Attach(::GetDC(GetSafeHwnd()));
+    m_pDC = &m_measure_dc;
 
     m_hTaskbar = FindTaskbarHandle(m_is_secondary_display); //查找任务栏的句柄
     ::GetWindowRect(m_hTaskbar, m_rcTaskbar);   //获得任务栏的矩形区域
@@ -1423,6 +1427,18 @@ void CTaskBarDlg::TryDrawGraph(IDrawCommon& drawer, const CRect& value_rect, Com
         int height = value * value_rect.Height() / 100;
         drawer.DrawLine(start_point, height, graph_color);
     }
+}
+
+void CTaskBarDlg::OnDestroy()
+{
+    KillTimer(TASKBAR_TIMER);
+    if (m_measure_dc.GetSafeHdc() != nullptr)
+    {
+        m_measure_dc.SelectStockObject(SYSTEM_FONT);
+        ::ReleaseDC(GetSafeHwnd(), m_measure_dc.Detach());
+    }
+    m_pDC = nullptr;
+    CDialogEx::OnDestroy();
 }
 
 void CTaskBarDlg::OnClose()

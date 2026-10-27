@@ -23,6 +23,7 @@ class CTaskBarDlg : public CDialogEx
 public:
     CTaskBarDlg(CWnd* pParent = NULL);   // 标准构造函数
     virtual ~CTaskBarDlg();
+    afx_msg void OnDestroy();
 
     CToolTipCtrl m_tool_tips;
 
@@ -154,6 +155,7 @@ protected:
 
     CFont m_font;			//字体
 
+    CDC m_measure_dc;  // Own the measurement DC across message-loop idle cleanup.
     CDC* m_pDC{};		//窗口的DC，用来计算窗口的宽度
 
     //查找任务栏的句柄
