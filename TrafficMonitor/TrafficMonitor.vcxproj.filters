@@ -734,16 +734,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\menu_icon\close.ico">
-      <Filter>资源文件\icons</Filter>
-    </Image>
     <Image Include="res\menu_icon\connection.ico">
       <Filter>资源文件\icons</Filter>
     </Image>
     <Image Include="res\menu_icon\exit.ico">
-      <Filter>资源文件\icons</Filter>
-    </Image>
-    <Image Include="res\menu_icon\function.ico">
       <Filter>资源文件\icons</Filter>
     </Image>
     <Image Include="res\menu_icon\help.ico">
@@ -753,18 +747,6 @@
       <Filter>资源文件\icons</Filter>
     </Image>
     <Image Include="res\menu_icon\item.ico">
-      <Filter>资源文件\icons</Filter>
-    </Image>
-    <Image Include="res\menu_icon\lock.ico">
-      <Filter>资源文件\icons</Filter>
-    </Image>
-    <Image Include="res\menu_icon\main_window.ico">
-      <Filter>资源文件\icons</Filter>
-    </Image>
-    <Image Include="res\menu_icon\more.ico">
-      <Filter>资源文件\icons</Filter>
-    </Image>
-    <Image Include="res\menu_icon\mouse.ico">
       <Filter>资源文件\icons</Filter>
     </Image>
     <Image Include="res\menu_icon\notify.ico">
@@ -785,9 +767,6 @@
     <Image Include="res\notifyicon5.ico">
       <Filter>资源文件\icons</Filter>
     </Image>
-    <Image Include="res\menu_icon\pin.ico">
-      <Filter>资源文件\icons</Filter>
-    </Image>
     <Image Include="res\menu_icon\plugin_disabled.ico">
       <Filter>资源文件\icons</Filter>
     </Image>
@@ -795,12 +774,6 @@
       <Filter>资源文件\icons</Filter>
     </Image>
     <Image Include="res\menu_icon\setting.ico">
-      <Filter>资源文件\icons</Filter>
-    </Image>
-    <Image Include="res\menu_icon\skn.ico">
-      <Filter>资源文件\icons</Filter>
-    </Image>
-    <Image Include="res\menu_icon\statistics.ico">
       <Filter>资源文件\icons</Filter>
     </Image>
     <Image Include="res\menu_icon\task_manager.ico">

@@ -64,8 +64,6 @@ void CTrafficMonitorApp::LoadConfig()
     CSettingsHelper ini;
 
     //常规设置
-    //m_general_data.allow_skin_cover_font = ini.GetBool(_T("general"), _T("allow_skin_cover_font"), true);
-    //m_general_data.allow_skin_cover_text = ini.GetBool(_T("general"), _T("allow_skin_cover_text"), true);
     m_general_data.show_all_interface = ini.GetBool(L"general", L"show_all_interface", false);
     m_general_data.cpu_usage_acquire_method = static_cast<GeneralSettingData::CpuUsageAcquireMethod>(ini.GetInt(L"general", L"cpu_usage_acquire_method", GeneralSettingData::CA_PDH));
     m_general_data.monitor_time_span = ini.GetInt(L"general", L"monitor_time_span", 1000);
@@ -241,8 +239,6 @@ void CTrafficMonitorApp::SaveConfig()
     CSettingsHelper ini;
 
     //常规设置
-    //ini.WriteBool(_T("general"), _T("allow_skin_cover_font"), m_general_data.allow_skin_cover_font);
-    //ini.WriteBool(_T("general"), _T("allow_skin_cover_text"), m_general_data.allow_skin_cover_text);
     ini.WriteString(_T("general"), _T("language"), m_general_data.language.toConfigString());
     ini.WriteBool(L"general", L"show_all_interface", m_general_data.show_all_interface);
     ini.WriteInt(L"general", L"cpu_usage_acquire_method", m_general_data.cpu_usage_acquire_method);
@@ -715,17 +711,6 @@ BOOL CTrafficMonitorApp::InitInstance()
     //AppData里面的程序配置文件路径
     m_config_path = m_config_dir + L"config.ini";
     m_log_path = m_config_dir + L"error.log";
-
-    //#ifndef _DEBUG
-    //  //原来的、程序所在目录下的配置文件的路径
-    //  wstring config_path_old = m_module_dir + L"config.ini";
-    //  wstring history_traffic_path_old = m_module_dir + L"history_traffic.dat";
-    //  wstring log_path_old = m_module_dir + L"error.log";
-    //  //如果程序所在目录下含有配置文件，则将其移动到AppData对应的目录下面
-    //  CCommon::MoveAFile(config_path_old.c_str(), m_config_path.c_str());
-    //  CCommon::MoveAFile(history_traffic_path_old.c_str(), m_history_traffic_path.c_str());
-    //  CCommon::MoveAFile(log_path_old.c_str(), m_log_path.c_str());
-    //#endif // !_DEBUG
 
     LoadLanguageConfig();
 

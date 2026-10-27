@@ -28,6 +28,4 @@ public:
     virtual BOOL OnInitDialog();
     afx_msg void OnBnClickedExitInstButton();
     afx_msg void OnBnClickedOpenSettingsButton();
-    afx_msg void OnBnClickedShowHideMainWindowButton();
-    afx_msg void OnBnClickedShowHideTaskbarWindowButton();
 };

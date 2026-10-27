@@ -35,8 +35,6 @@ CString CAppAlreadyRuningDlg::GetDialogName() const
 BEGIN_MESSAGE_MAP(CAppAlreadyRuningDlg, CBaseDialog)
     ON_BN_CLICKED(IDC_EXIT_INST_BUTTON, &CAppAlreadyRuningDlg::OnBnClickedExitInstButton)
     ON_BN_CLICKED(IDC_OPEN_SETTINGS_BUTTON, &CAppAlreadyRuningDlg::OnBnClickedOpenSettingsButton)
-    ON_BN_CLICKED(IDC_SHOW_HIDE_MAIN_WINDOW_BUTTON, &CAppAlreadyRuningDlg::OnBnClickedShowHideMainWindowButton)
-    ON_BN_CLICKED(IDC_SHOW_HIDE_TASKBAR_WINDOW_BUTTON, &CAppAlreadyRuningDlg::OnBnClickedShowHideTaskbarWindowButton)
 END_MESSAGE_MAP()
 
 
@@ -64,16 +62,4 @@ void CAppAlreadyRuningDlg::OnBnClickedExitInstButton()
 void CAppAlreadyRuningDlg::OnBnClickedOpenSettingsButton()
 {
     ::PostMessage(m_handle, WM_COMMAND, ID_OPTIONS, 0);
-}
-
-
-void CAppAlreadyRuningDlg::OnBnClickedShowHideMainWindowButton()
-{
-    ::PostMessage(m_handle, WM_COMMAND, ID_SHOW_MAIN_WND, 0);
-}
-
-
-void CAppAlreadyRuningDlg::OnBnClickedShowHideTaskbarWindowButton()
-{
-    ::PostMessage(m_handle, WM_COMMAND, ID_SHOW_TASK_BAR_WND, 0);
 }
