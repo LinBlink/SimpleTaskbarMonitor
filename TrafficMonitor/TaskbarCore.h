@@ -55,11 +55,11 @@ protected:
 // 实现
 protected:
     HICON m_hIcon;
-    NOTIFYICONDATA m_ntIcon;    //通知区域图标
+    NOTIFYICONDATA m_ntIcon{};    //通知区域图标
     CTaskBarDlg* m_tBarDlg{};     //任务栏窗口的指针
 
     vector<NetWorkConection> m_connections; //保存获取到的要显示到“选择网卡”菜单项中的所有网络连接
-    MIB_IFTABLE* m_pIfTable;
+    MIB_IFTABLE* m_pIfTable{ nullptr };
     DWORD m_dwSize{};	//m_pIfTable的大小
     int m_connection_selected{ 0 }; //要显示流量的连接的序号
     unsigned __int64 m_in_bytes{};        //当前已接收的字节数
