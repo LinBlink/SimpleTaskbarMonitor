@@ -65,6 +65,9 @@ foreach($helper in Get-ChildItem -LiteralPath (Join-Path $root 'helpers\AIUsage'
 @{source=$root;commit=$commit;configuration='Release (lite)';configurationDirectory=$destinationPath;deployedAt=(Get-Date).ToString('o')} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $destinationPath '.deployment.json') -Encoding UTF8
 $readme=(Get-Content -LiteralPath (Join-Path $root 'install\README.md') -Raw -Encoding UTF8).Replace('{{SOURCE_DIR}}',$root)
 Set-Content -LiteralPath (Join-Path $destinationPath 'README.md') -Value $readme -Encoding UTF8
-if(!$NoStart) {Start-Process -FilePath $binary -WorkingDirectory $destinationPath -WindowStyle Hidden}
+if(!$NoStart) {
+    . (Join-Path $root 'tools\start_installation.ps1')
+    Start-TrafficMonitorInstallation -Executable $binary
+}
 Write-Host "Deployed Lite source commit $commit to $destinationPath"
 Write-Host "Program-directory configuration; backup: $backup"

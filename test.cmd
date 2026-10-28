@@ -20,9 +20,13 @@ artifacts\tests\stable_item_colors_test.exe
 if errorlevel 1 exit /b 1
 python tests\config_migration_test.py
 if errorlevel 1 exit /b 1
+powershell -NoProfile -ExecutionPolicy Bypass -File tests\start_installation_test.ps1
+if errorlevel 1 exit /b 1
 powershell -NoProfile -ExecutionPolicy Bypass -File tests\ai_usage_test.ps1
 if errorlevel 1 exit /b 1
 powershell -NoProfile -ExecutionPolicy Bypass -File build.ps1 -Configuration "Debug (lite)"
+if errorlevel 1 exit /b 1
+powershell -NoProfile -ExecutionPolicy Bypass -File tests\temperature_values_test.ps1 -Worker "artifacts\build\x64\Debug (lite)\sensors\TemperatureWorker.exe"
 if errorlevel 1 exit /b 1
 python tests\taskbar_smoke.py "artifacts\build\x64\Debug (lite)\TrafficMonitor.exe"
 if errorlevel 1 exit /b 1

@@ -65,5 +65,8 @@ try {
     Write-Host ('Compacted: {0:N2} MB -> {1:N2} MB' -f ($before/1MB),($after/1MB))
     Write-Host "Archive: $archive"
 } finally {
-    if($running.Count) {Start-Process -FilePath $binary -WorkingDirectory $target -WindowStyle Hidden}
+    if($running.Count) {
+        . (Join-Path $PSScriptRoot 'start_installation.ps1')
+        Start-TrafficMonitorInstallation -Executable $binary
+    }
 }

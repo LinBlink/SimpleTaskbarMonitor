@@ -9,8 +9,11 @@ using LibreHardwareMonitor.Hardware;
 
 // Isolated sensor worker for the Lite host: no plugin API or old application DLL.
 internal static class TemperatureWorker {
+    static bool Valid(float? value) {
+        return value.HasValue && !float.IsNaN(value.Value) && !float.IsInfinity(value.Value) && value.Value>0 && value.Value<=150;
+    }
     static string Numeric(float? value) {
-        return value.HasValue && !float.IsNaN(value.Value) && !float.IsInfinity(value.Value) && value.Value>=0 && value.Value<=150
+        return Valid(value)
             ? value.Value.ToString("0.0",CultureInfo.InvariantCulture) : "-1";
     }
     static void Sensors(IHardware hardware, List<ISensor> cpu, List<ISensor> gpu) {
@@ -23,10 +26,11 @@ internal static class TemperatureWorker {
         foreach(var sub in hardware.SubHardware) Sensors(sub,cpu,gpu);
     }
     static float? Select(List<ISensor> sensors, string preferred, bool cpu) {
-        foreach(var sensor in sensors) if(string.Equals(sensor.Name,preferred,StringComparison.OrdinalIgnoreCase)) return sensor.Value;
+        foreach(var sensor in sensors) if(string.Equals(sensor.Name,preferred,StringComparison.OrdinalIgnoreCase) && Valid(sensor.Value)) return sensor.Value;
         string[] names=cpu ? new[]{"Core Average","CPU Package","CPU (Tctl/Tdie)","CPU Die (average)"} : new[]{"GPU Core","GPU Temperature"};
-        foreach(var name in names) foreach(var sensor in sensors) if(string.Equals(sensor.Name,name,StringComparison.OrdinalIgnoreCase)) return sensor.Value;
-        return sensors.Count>0 ? sensors[0].Value : null;
+        foreach(var name in names) foreach(var sensor in sensors) if(string.Equals(sensor.Name,name,StringComparison.OrdinalIgnoreCase) && Valid(sensor.Value)) return sensor.Value;
+        foreach(var sensor in sensors) if(Valid(sensor.Value)) return sensor.Value;
+        return null;
     }
     static void Save(string file, float? cpu, float? gpu, string status) {
         string text="[temperature]\r\nupdated="+DateTimeOffset.UtcNow.ToUnixTimeSeconds()+"\r\ncpu="+Numeric(cpu)+"\r\ngpu="+Numeric(gpu)+"\r\nstatus="+status.Replace('\r',' ').Replace('\n',' ')+"\r\n";
@@ -50,7 +54,10 @@ internal static class TemperatureWorker {
                 try {
                     var cpuSensors=new List<ISensor>(); var gpuSensors=new List<ISensor>();
                     foreach(var hardware in computer.Hardware) Sensors(hardware,cpuSensors,gpuSensors);
-                    Save(file,Select(cpuSensors,preferred,true),Select(gpuSensors,"GPU Core",false),"OK");
+                    float? cpuValue=Select(cpuSensors,preferred,true), gpuValue=Select(gpuSensors,"GPU Core",false);
+                    string status=cpu && !Valid(cpuValue) ? "CPU temperature unavailable; check administrator/driver access"
+                        : gpu && !Valid(gpuValue) ? "GPU temperature unavailable" : "OK";
+                    Save(file,cpuValue,gpuValue,status);
                 } catch(Exception e) { Save(file,null,null,e.GetType().Name); }
                 stop.WaitOne(1500);
             }
