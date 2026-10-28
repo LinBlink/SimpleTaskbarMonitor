@@ -20,4 +20,6 @@ AI 使用紧凑双行：上行显示 5h 剩余和重置时间，下行“周”�
 .\deploy.ps1 -Destination C:\_FLEX\TrafficMonitor
 ```
 
-部署来源和提交记录在 `.deployment.json`，配置与程序备份在 `artifacts/source-deploy-时间戳/`。账号配置、密钥和缓存保留原样。
+部署来源和提交记录在 `.deployment.json`。配置与程序备份在运行目录旁的 `TrafficMonitor-archive/source-deploy-时间戳/`，清理归档在同级 `cleanup-时间戳/`。账号配置、密钥和缓存保留原样。
+
+运行目录只保留程序、依赖和配置；构建和测试请到源码仓库执行。部署 Git 历史存放在外部归档，通过本目录的 `.git` 指针继续访问。
