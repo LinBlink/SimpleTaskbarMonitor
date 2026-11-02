@@ -45,7 +45,17 @@ $legacyBinary=Join-Path $destinationPath 'TrafficMonitor.exe'
 $running=@(Get-Process -Name 'SimpleTaskbarMonitor','TrafficMonitor' -ErrorAction SilentlyContinue)
 foreach($instance in $running) {
     [TaskbarDeploymentWindow]::CloseCore($instance.Id)
-    if(!$instance.WaitForExit(12000)) {throw 'Installed instance did not close; deployment stopped before replacement.'}
+    if(!$instance.WaitForExit(12000)) {
+        foreach($task in @(Get-ScheduledTask -TaskPath '\TrafficMonitor\' -ErrorAction SilentlyContinue)) {
+            foreach($action in @($task.Actions)) {
+                try {$actionPath=[IO.Path]::GetFullPath([Environment]::ExpandEnvironmentVariables($action.Execute.Trim('"')))} catch {continue}
+                if([IO.Path]::GetFileName($actionPath) -notin @('SimpleTaskbarMonitor.exe','TrafficMonitor.exe')) {continue}
+                Stop-ScheduledTask -TaskPath $task.TaskPath -TaskName $task.TaskName -ErrorAction Stop
+                break
+            }
+        }
+        if(!$instance.WaitForExit(5000)) {throw 'Installed instance did not close; deployment stopped before replacement.'}
+    }
 }
 foreach($name in @('SimpleTaskbarMonitor.exe','TrafficMonitor.exe','config.ini','global_cfg.ini','build.ps1','README.md','.deployment.json')) {
     $file=Join-Path $destinationPath $name
