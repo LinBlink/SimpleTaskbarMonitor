@@ -214,8 +214,6 @@
 #define IDC_UNIT_BYTE_RADIO             1091
 #define IDC_UNIT_BIT_RADIO              1092
 #define IDC_SHOW_ALL_CONNECTION_CHECK   1092
-#define IDC_SAVE_TO_APPDATA_RADIO       1093
-#define IDC_SAVE_TO_PROGRAM_DIR_RADIO   1094
 #define IDC_HELP_EDIT                   1095
 #define IDC_INFO_STATIC                 1096
 #define IDC_SHOW_TOOL_TIP_CHK           1097

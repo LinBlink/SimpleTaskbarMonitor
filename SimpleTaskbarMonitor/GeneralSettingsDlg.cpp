@@ -298,9 +298,6 @@ BOOL CGeneralSettingsDlg::OnInitDialog()
 
 
     m_data.portable_mode = true;
-    GetDlgItem(IDC_SAVE_TO_APPDATA_RADIO)->ShowWindow(SW_HIDE);
-    CheckDlgButton(IDC_SAVE_TO_PROGRAM_DIR_RADIO, TRUE);
-    EnableDlgCtrl(IDC_SAVE_TO_PROGRAM_DIR_RADIO, FALSE);
 
     ((CButton*)GetDlgItem(IDC_AUTO_RUN_CHECK))->SetCheck(m_data.auto_run);
 
@@ -337,8 +334,6 @@ BOOL CGeneralSettingsDlg::OnInitDialog()
     m_toolTip.Create(this);
     m_toolTip.SetMaxTipWidth(theApp.DPI(300));
     m_toolTip.AddTool(GetDlgItem(IDC_SHOW_ALL_CONNECTION_CHECK), CCommon::LoadText(IDS_SHOW_ALL_INFO_TIP));
-    m_toolTip.AddTool(GetDlgItem(IDC_SAVE_TO_APPDATA_RADIO), theApp.m_appdata_dir.c_str());
-    m_toolTip.AddTool(GetDlgItem(IDC_SAVE_TO_PROGRAM_DIR_RADIO), theApp.m_module_dir.c_str());
     AddOrUpdateAutoRunTooltip(true);
 
     if (m_data.cpu_usage_acquire_method == GeneralSettingData::CA_CPU_TIME)
