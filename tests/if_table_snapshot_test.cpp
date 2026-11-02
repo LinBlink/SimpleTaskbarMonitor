@@ -1,4 +1,4 @@
-#include "../TrafficMonitor/IfTableSnapshot.h"
+#include "../SimpleTaskbarMonitor/IfTableSnapshot.h"
 #include <cassert>
 #include <cstring>
 #include <iostream>

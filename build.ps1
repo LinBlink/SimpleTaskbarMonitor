@@ -1,4 +1,4 @@
-﻿param(
+param(
     [ValidateSet('Debug (lite)','Release (lite)')][string]$Configuration='Release (lite)'
 )
 $ErrorActionPreference='Stop'
@@ -10,7 +10,7 @@ $version=& $vswhere -latest -products '*' -property installationVersion
 $toolset=if ([version]$version -ge [version]'18.0') {'v145'} else {'v143'}
 $msbuild=Join-Path $installation 'MSBuild\Current\Bin\MSBuild.exe'
 $output=Join-Path $root "artifacts\build\x64\$Configuration\"
-& $msbuild (Join-Path $root 'TrafficMonitor\TrafficMonitor.vcxproj') /m /nologo /v:minimal "/p:Configuration=$Configuration" /p:Platform=x64 "/p:PlatformToolset=$toolset" "/p:OutDir=$output"
+& $msbuild (Join-Path $root 'SimpleTaskbarMonitor\SimpleTaskbarMonitor.vcxproj') /m /nologo /v:minimal "/p:Configuration=$Configuration" /p:Platform=x64 "/p:PlatformToolset=$toolset" "/p:OutDir=$output"
 if ($LASTEXITCODE -ne 0) { throw "Build failed: $LASTEXITCODE" }
 $sensors=Join-Path $output 'sensors'
 New-Item -ItemType Directory -Path $sensors -Force | Out-Null

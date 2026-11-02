@@ -1,5 +1,5 @@
-﻿# Reuse the user's existing elevated autorun task; never create or modify tasks.
-function Start-TrafficMonitorInstallation {
+# Reuse the user's existing elevated autorun task; never create or modify tasks.
+function Start-SimpleTaskbarInstallation {
     param([Parameter(Mandatory=$true)][string]$Executable)
     $binary=[IO.Path]::GetFullPath($Executable)
     $tasks=@(Get-ScheduledTask -TaskPath '\TrafficMonitor\' -ErrorAction SilentlyContinue | Sort-Object TaskName)

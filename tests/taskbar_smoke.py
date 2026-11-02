@@ -30,21 +30,21 @@ def windows(pid):
     u.EnumChildWindows(u.GetDesktopWindow(),cb,0)
     return result
 
-parser=argparse.ArgumentParser(description='Windows smoke test for a Debug (lite) build; close other TrafficMonitor instances first.')
+parser=argparse.ArgumentParser(description='Windows smoke test for a Debug (lite) build; close other SimpleTaskbarMonitor instances first.')
 parser.add_argument('executable',type=Path)
 args=parser.parse_args()
 exe=args.executable.resolve()
 assert exe.is_file(), exe
 assert exe.parent.name.lower().startswith('debug'), 'Use a Debug build so configuration stays in the test working directory'
 # Release installations may remain running; this test uses the separate Debug mutex.
-resource_header=Path(__file__).resolve().parents[1]/'TrafficMonitor/resource.h'
+resource_header=Path(__file__).resolve().parents[1]/'SimpleTaskbarMonitor/resource.h'
 header=resource_header.read_text(encoding='utf-8-sig')
 option_id=int(re.search(r'#define ID_OPTIONS2\s+(\d+)',header)[1])
 temporary=tempfile.TemporaryDirectory(prefix='trafficmonitor-smoke-')
 work=Path(temporary.name)
 program=work/'program';program.mkdir()
-shutil.copy2(exe,program/'TrafficMonitor.exe')
-exe=program/'TrafficMonitor.exe'
+shutil.copy2(exe,program/'SimpleTaskbarMonitor.exe')
+exe=program/'SimpleTaskbarMonitor.exe'
 cwd=work/'cwd';cwd.mkdir()
 (cwd/'config.ini').write_text('[sentinel]\nkeep=unchanged\n')
 appdata=Path.home()/'AppData/Roaming/TrafficMonitor/config.ini'
@@ -59,9 +59,9 @@ for mode in ['core','display']:
         found=windows(p.pid)
         print(mode,'startup:', 'alive' if p.poll() is None else p.poll(),flush=True)
         assert p.poll() is None, 'Application exited during startup'
-        core=next(x for x in found if x[1]=='TrafficMonitor_r7XZaS4p')
+        core=next(x for x in found if x[1]=='SimpleTaskbarMonitor_r7XZaS4p')
         assert not core[3], 'Core window must remain hidden'
-        display=next(x for x in found if x[2]=='TrafficMonitorTaskbarWindow' and x[3])
+        display=next(x for x in found if x[2]=='SimpleTaskbarMonitorTaskbarWindow' and x[3])
         taskbar=u.GetAncestor(display[0],1)
         cls=C.create_unicode_buffer(256); u.GetClassNameW(taskbar,cls,256)
         assert cls.value in ('Shell_TrayWnd','Shell_SecondaryTrayWnd'), ('Display did not embed in the taskbar',found)

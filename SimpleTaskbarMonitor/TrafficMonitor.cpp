@@ -705,9 +705,9 @@ BOOL CTrafficMonitorApp::InitInstance()
     m_no_multistart_warning = ini.GetBool(_T("other"), _T("no_multistart_warning"), false);
     LPCTSTR mutex_name{};
 #ifdef _DEBUG
-    mutex_name = _T("TrafficMonitor-e8Ahk24HP6JC8hDy");
+    mutex_name = _T("SimpleTaskbarMonitor-e8Ahk24HP6JC8hDy");
 #else
-    mutex_name = _T("TrafficMonitor-1419J3XLKL1w8OZc");
+    mutex_name = _T("SimpleTaskbarMonitor-1419J3XLKL1w8OZc");
 #endif
     HANDLE hMutex = ::CreateMutex(NULL, TRUE, mutex_name);
     if (hMutex != NULL)

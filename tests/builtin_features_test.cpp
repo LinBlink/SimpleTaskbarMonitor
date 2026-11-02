@@ -2,13 +2,13 @@
 #include <cassert>
 #include <set>
 #include <iostream>
-#include "../TrafficMonitor/Builtin/BuiltinFeatures.h"
-#include "../TrafficMonitor/Builtin/PowerValues.h"
-#include "../TrafficMonitor/Builtin/DateMath.h"
-#include "../TrafficMonitor/Builtin/ResetHours.h"
-#include "../TrafficMonitor/Builtin/GroupedUsage.h"
-#include "../TrafficMonitor/Builtin/ResetAlert.h"
-#include "../TrafficMonitor/Builtin/AIUsageLayout.h"
+#include "../SimpleTaskbarMonitor/Builtin/BuiltinFeatures.h"
+#include "../SimpleTaskbarMonitor/Builtin/PowerValues.h"
+#include "../SimpleTaskbarMonitor/Builtin/DateMath.h"
+#include "../SimpleTaskbarMonitor/Builtin/ResetHours.h"
+#include "../SimpleTaskbarMonitor/Builtin/GroupedUsage.h"
+#include "../SimpleTaskbarMonitor/Builtin/ResetAlert.h"
+#include "../SimpleTaskbarMonitor/Builtin/AIUsageLayout.h"
 int main() {
     auto measure=[](const std::wstring& text) { return static_cast<int>(text.size()*8); };
     auto layout=AIUsageLayout::MeasureColumns(4,measure,2);

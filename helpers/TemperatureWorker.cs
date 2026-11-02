@@ -46,7 +46,7 @@ internal static class TemperatureWorker {
         string preferred=args.Length>4 ? args[4] : "Core Average";
         var computer=new Computer {IsCpuEnabled=cpu,IsGpuEnabled=gpu};
         Process parent=null;
-        var stop=new EventWaitHandle(false,EventResetMode.ManualReset,"Local\\TrafficMonitor.Sensors.Stop."+parentId);
+        var stop=new EventWaitHandle(false,EventResetMode.ManualReset,"Local\\SimpleTaskbarMonitor.Sensors.Stop."+parentId);
         try {
             parent=Process.GetProcessById(parentId);
             computer.Open();

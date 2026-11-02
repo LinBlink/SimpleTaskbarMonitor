@@ -1,4 +1,4 @@
-﻿
+
 // stdafx.h : 标准系统包含文件的包含文件，
 // 或是经常使用但不常更改的
 // 特定于项目的包含文件
@@ -94,9 +94,9 @@ using std::ofstream;
 #define MAX_INSERT_TO_TASKBAR_CNT 200     //尝试嵌入任务栏的最大次数
 #define WARN_INSERT_TO_TASKBAR_CNT 20     //尝试嵌入任务栏的警告次数
 
-#define APP_NAME _T("TrafficMonitor")
-#define TASKBAR_WINDOW_NAME _T("TrafficMonitorTaskbarWindow")
-#define APP_CLASS_NAME _T("TrafficMonitor_r7XZaS4p") //程序主窗口的类名
+#define APP_NAME _T("SimpleTaskbarMonitor")
+#define TASKBAR_WINDOW_NAME _T("SimpleTaskbarMonitorTaskbarWindow")
+#define APP_CLASS_NAME _T("SimpleTaskbarMonitor_r7XZaS4p") //程序主窗口的类名
 #define VERSION L"1.86"
 #define COPYRITE_YEAR L"2017-2026"
 

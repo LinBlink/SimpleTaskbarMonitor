@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrafficMonitor", "TrafficMonitor\TrafficMonitor.vcxproj", "{09483BED-B1E9-4827-8120-A18302C84AA8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleTaskbarMonitor", "SimpleTaskbarMonitor\SimpleTaskbarMonitor.vcxproj", "{09483BED-B1E9-4827-8120-A18302C84AA8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

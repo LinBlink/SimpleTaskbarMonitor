@@ -3,7 +3,7 @@ $ErrorActionPreference='Stop'
 $root=$PSScriptRoot
 if (!$SkipBuild) { & (Join-Path $root 'build.ps1') }
 $built=Join-Path $root 'artifacts\build\x64\Release (lite)'
-if (!(Test-Path -LiteralPath (Join-Path $built 'TrafficMonitor.exe'))) { throw 'Build the Lite Release first.' }
+if (!(Test-Path -LiteralPath (Join-Path $built 'SimpleTaskbarMonitor.exe'))) { throw 'Build the Lite Release first.' }
 $destinationPath=[IO.Path]::GetFullPath($Destination).TrimEnd('\')
 if (!(Test-Path -LiteralPath $destinationPath)) { throw 'Destination must already exist.' }
 $commit=(& git -C $root rev-parse --short HEAD).Trim()
@@ -35,17 +35,19 @@ public static class TaskbarDeploymentWindow {
  [DllImport("user32.dll")] static extern bool PostMessage(IntPtr h,uint msg,IntPtr w,IntPtr l);
  public static void CloseCore(int target) {
   EnumWindows((h,p)=> {uint pid;GetWindowThreadProcessId(h,out pid);var name=new StringBuilder(128);GetClassName(h,name,128);
-   if(pid==target && name.ToString()=="TrafficMonitor_r7XZaS4p") PostMessage(h,0x10,IntPtr.Zero,IntPtr.Zero);return true;},IntPtr.Zero);
+   var cls=name.ToString();
+   if(pid==target && (cls=="SimpleTaskbarMonitor_r7XZaS4p" || cls=="TrafficMonitor_r7XZaS4p")) PostMessage(h,0x10,IntPtr.Zero,IntPtr.Zero);return true;},IntPtr.Zero);
  }
 }'
 }
-$binary=Join-Path $destinationPath 'TrafficMonitor.exe'
-$running=@(Get-Process TrafficMonitor -ErrorAction SilentlyContinue | Where-Object {$_.Path -eq $binary})
+$binary=Join-Path $destinationPath 'SimpleTaskbarMonitor.exe'
+$legacyBinary=Join-Path $destinationPath 'TrafficMonitor.exe'
+$running=@(Get-Process -ErrorAction SilentlyContinue | Where-Object {$_.Path -eq $binary -or $_.Path -eq $legacyBinary})
 foreach($instance in $running) {
     [TaskbarDeploymentWindow]::CloseCore($instance.Id)
     if(!$instance.WaitForExit(12000)) {throw 'Installed instance did not close; deployment stopped before replacement.'}
 }
-foreach($name in @('TrafficMonitor.exe','config.ini','global_cfg.ini','build.ps1','README.md','.deployment.json')) {
+foreach($name in @('SimpleTaskbarMonitor.exe','TrafficMonitor.exe','config.ini','global_cfg.ini','build.ps1','README.md','.deployment.json')) {
     $file=Join-Path $destinationPath $name
     if(Test-Path -LiteralPath $file) {Copy-Item -LiteralPath $file -Destination $backup}
 }
@@ -56,7 +58,22 @@ if(Test-Path -LiteralPath $programConfig) {
     & python @migration
     if($LASTEXITCODE -ne 0) {throw 'Configuration migration failed; original files remain in the backup.'}
 }
-Copy-Item -LiteralPath (Join-Path $built 'TrafficMonitor.exe') -Destination $binary -Force
+Copy-Item -LiteralPath (Join-Path $built 'SimpleTaskbarMonitor.exe') -Destination $binary -Force
+if(Test-Path -LiteralPath $legacyBinary) {Remove-Item -LiteralPath $legacyBinary -Force}
+# Keep the existing elevated autorun tasks pointing at the renamed executable.
+foreach($task in @(Get-ScheduledTask -TaskPath '\TrafficMonitor\' -ErrorAction SilentlyContinue)) {
+    foreach($action in @($task.Actions)) {
+        try {$actionPath=[IO.Path]::GetFullPath([Environment]::ExpandEnvironmentVariables($action.Execute.Trim('"')))} catch {continue}
+        if(![string]::Equals($actionPath,$legacyBinary,[StringComparison]::OrdinalIgnoreCase)) {continue}
+        $action.Execute=$binary
+        try {
+            $task | Set-ScheduledTask -ErrorAction Stop | Out-Null
+            Write-Host "Updated scheduled task action: $($task.TaskPath)$($task.TaskName) -> $binary"
+        } catch {
+            throw "Could not update scheduled task '$($task.TaskPath)$($task.TaskName)' to the renamed executable. Open Task Scheduler and point its action at $binary, then redeploy."
+        }
+    }
+}
 $sensorTarget=Join-Path $destinationPath 'sensors'
 New-Item -ItemType Directory -Path $sensorTarget -Force | Out-Null
 Copy-Item -Path (Join-Path $built 'sensors\*') -Destination $sensorTarget -Force
@@ -73,7 +90,7 @@ $readme=(Get-Content -LiteralPath (Join-Path $root 'install\README.md') -Raw -En
 Set-Content -LiteralPath (Join-Path $destinationPath 'README.md') -Value $readme -Encoding UTF8
 if(!$NoStart) {
     . (Join-Path $root 'tools\start_installation.ps1')
-    Start-TrafficMonitorInstallation -Executable $binary
+    Start-SimpleTaskbarInstallation -Executable $binary
 }
 Write-Host "Deployed Lite source commit $commit to $destinationPath"
 Write-Host "Program-directory configuration; backup: $backup"

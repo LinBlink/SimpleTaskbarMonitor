@@ -104,7 +104,7 @@ public:
     }
     const wchar_t* GetTooltipInfo()override{return tooltip.c_str();}
     const wchar_t* GetInfo(PluginInfoIndex i)override{
-        switch(i){case TMI_NAME:return L"电池";case TMI_DESCRIPTION:return L"内置 Windows 电池电量与充电状态";case TMI_AUTHOR:return L"TrafficMonitor";case TMI_VERSION:return L"1.0";default:return L"";}
+        switch(i){case TMI_NAME:return L"电池";case TMI_DESCRIPTION:return L"内置 Windows 电池电量与充电状态";case TMI_AUTHOR:return L"SimpleTaskbarMonitor";case TMI_VERSION:return L"1.0";default:return L"";}
     }
 };
 class PowerFeature: public ITMPlugin {
@@ -132,7 +132,7 @@ public:
     }
     const wchar_t* GetTooltipInfo()override{return tooltip.c_str();}
     const wchar_t* GetInfo(PluginInfoIndex i)override{
-        switch(i){case TMI_NAME:return L"功耗";case TMI_DESCRIPTION:return L"内置电池功率、容量、电压、续航，无需额外驱动";case TMI_AUTHOR:return L"TrafficMonitor";case TMI_VERSION:return L"1.0";default:return L"";}
+        switch(i){case TMI_NAME:return L"功耗";case TMI_DESCRIPTION:return L"内置电池功率、容量、电压、续航，无需额外驱动";case TMI_AUTHOR:return L"SimpleTaskbarMonitor";case TMI_VERSION:return L"1.0";default:return L"";}
     }
 };
 }

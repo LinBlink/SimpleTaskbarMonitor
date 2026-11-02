@@ -75,7 +75,7 @@ BOOL CAboutDlg::OnInitDialog()
 
     m_mail.SetURL(_T("mailto:zhongyang219@hotmail.com"));   //设置超链接
     //m_check_update.SetURL(_T("http://pan.baidu.com/s/1c1LkPQ4"));
-    m_github.SetURL(_T("https://github.com/zhongyang219/TrafficMonitor"));
+    m_github.SetURL(_T("https://github.com/LinBlink/SimpleTaskbarMonitor"));
     m_gitee.SetURL(_T("https://gitee.com/zhongyang219/TrafficMonitor"));
     m_acknowledgement.SetLinkIsURL(false);
     m_license.SetLinkIsURL(false);
@@ -127,7 +127,7 @@ BOOL CAboutDlg::OnInitDialog()
     m_tool_tip.Create(this, TTS_ALWAYSTIP | TTS_NOPREFIX);
     m_tool_tip.AddTool(&m_mail, CCommon::LoadText(IDS_SEND_EMAIL_TO_ATHOUR, _T("\r\nmailto:zhongyang219@hotmail.com")));
     //m_tool_tip.AddTool(&m_check_update, _T("到百度网盘链接查看是否有更新\r\nhttp://pan.baidu.com/s/1c1LkPQ4"));
-    m_tool_tip.AddTool(&m_github, CCommon::LoadText(IDS_GOTO_GITHUB, _T("\r\nhttps://github.com/zhongyang219/TrafficMonitor")));
+    m_tool_tip.AddTool(&m_github, CCommon::LoadText(IDS_GOTO_GITHUB, _T("\r\nhttps://github.com/LinBlink/SimpleTaskbarMonitor")));
     m_tool_tip.AddTool(&m_gitee, CCommon::LoadText(IDS_GOTO_GITEE, _T("\r\nhttps://gitee.com/zhongyang219/TrafficMonitor")));
     m_tool_tip.AddTool(&m_openhardwaremonitor_link, m_openhardwaremonitor_link.GetURL());
     m_tool_tip.AddTool(&m_musicplayer2_link, CCommon::LoadText(IDS_MUSICPLAYER2_DESCRIPTION) + _T("\r\n") + m_musicplayer2_link.GetURL());

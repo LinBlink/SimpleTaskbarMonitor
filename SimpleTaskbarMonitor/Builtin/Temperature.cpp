@@ -41,7 +41,7 @@ public:
             for(wchar_t c:cpuCore) if(c!=34 && c!=92) safeCore+=c;
             auto command=L"\""+executable+L"\" \""+file+L"\" "+std::to_wstring(GetCurrentProcessId())+
                 ((enabled&1)?L" 1":L" 0")+((enabled&2)?L" 1":L" 0")+L" \""+safeCore+L"\"";
-            auto eventName=L"Local\\TrafficMonitor.Sensors.Stop."+std::to_wstring(GetCurrentProcessId());
+            auto eventName=L"Local\\SimpleTaskbarMonitor.Sensors.Stop."+std::to_wstring(GetCurrentProcessId());
             stop=CreateEventW(nullptr,TRUE,FALSE,eventName.c_str());
             if(stop) ResetEvent(stop);
             STARTUPINFOW startup{};startup.cb=sizeof(startup);PROCESS_INFORMATION child{};

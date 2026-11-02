@@ -1,4 +1,4 @@
-#include "../TrafficMonitor/StableItemColors.h"
+#include "../SimpleTaskbarMonitor/StableItemColors.h"
 #include <cassert>
 #include <iostream>
 int main() {

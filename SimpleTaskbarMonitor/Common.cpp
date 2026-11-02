@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "Common.h"
 #include "TrafficMonitor.h"
 
@@ -904,7 +904,7 @@ void CCommon::GetInternetIp(wstring& ip_address, wstring& ip_location, bool glob
 void CCommon::GetInternetIp2(wstring& ip_address, wstring& ip_location, bool ipv6)
 {
     wstring raw_string;
-    wstring user_agent{ L"TrafficMonitor/" };
+    wstring user_agent{ L"SimpleTaskbarMonitor/" };
     user_agent += VERSION;
     if (GetURL((ipv6 ? L"https://v6.yinghualuo.cn/bejson" : L"https://v4.yinghualuo.cn/bejson"), raw_string, true, user_agent))
     {

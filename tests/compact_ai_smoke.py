@@ -27,8 +27,8 @@ def find(pid):
         if owner.value==pid:
             title=C.create_unicode_buffer(256);cls=C.create_unicode_buffer(256)
             u.GetWindowTextW(h,title,256);u.GetClassNameW(h,cls,256)
-            if title.value=='TrafficMonitorTaskbarWindow':result['display']=h
-            if cls.value=='TrafficMonitor_r7XZaS4p':result['core']=h
+            if title.value=='SimpleTaskbarMonitorTaskbarWindow':result['display']=h
+            if cls.value=='SimpleTaskbarMonitor_r7XZaS4p':result['core']=h
         return True
     u.EnumChildWindows(u.GetDesktopWindow(),visit,0)
     return result
@@ -44,7 +44,7 @@ def highlighted(h):
 exe=Path(sys.argv[1]).resolve()
 assert exe.parent.name.startswith('Debug')
 with tempfile.TemporaryDirectory(prefix='trafficmonitor-compact-') as temp:
-    root=Path(temp);shutil.copy2(exe,root/'TrafficMonitor.exe')
+    root=Path(temp);shutil.copy2(exe,root/'SimpleTaskbarMonitor.exe')
     (root/'plugins').mkdir()
     (root/'plugins/AIUsage.ini').write_text('[settings]\nEnableQueries=0\n')
     now=int(time.time())
@@ -53,7 +53,7 @@ with tempfile.TemporaryDirectory(prefix='trafficmonitor-compact-') as temp:
     sizes=[]
     for horizontal in ['true','false']:
         (root/'config.ini').write_text('[task_bar]\ntbar_display_item=0\nplugin_display_item=AIUsageCodexSummary\nhorizontal_arrange='+horizontal+'\ntask_bar_back_color=1\nauto_set_background_color=false\ndisable_d2d=true\ntask_bar_text_color=65280,16777215\ntask_bar_text_color_item_ids=AIUsageCodexSummary\nspecify_each_item_color=true\n[other]\nno_multistart_warning=true\n')
-        process=subprocess.Popen([str(root/'TrafficMonitor.exe')],cwd=root)
+        process=subprocess.Popen([str(root/'SimpleTaskbarMonitor.exe')],cwd=root)
         try:
             time.sleep(3);handles=find(process.pid)
             assert 'display' in handles and 'core' in handles

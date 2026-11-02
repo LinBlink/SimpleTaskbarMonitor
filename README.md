@@ -1,4 +1,4 @@
-# TrafficMonitor Lite 任务栏版
+# SimpleTaskbarMonitor 任务栏版（原 TrafficMonitor Lite）
 
 源码只在本仓库维护，运行目录为 `C:\_FLEX\TrafficMonitor`。先修改、测试并提交源码，再部署；不使用旧版主程序，不切换到标准版构建。
 
@@ -19,7 +19,7 @@
 
 ## 配置与颜色
 
-所有构建（包括 Debug）固定读写 `TrafficMonitor.exe` 同目录的 `config.ini` 和 `global_cfg.ini`。工作目录、AppData、旧 `portable_mode=false` 设置都不能改变这个位置。配置目录不可写时不会回退到其他目录。
+所有构建（包括 Debug）固定读写 `SimpleTaskbarMonitor.exe` 同目录的 `config.ini` 和 `global_cfg.ini`。工作目录、AppData、旧 `portable_mode=false` 设置都不能改变这个位置。配置目录不可写时不会回退到其他目录。
 
 `install/config.ini` 和 `install/global_cfg.ini` 是默认配置，与 `C:\_FLEX\TrafficMonitor` 当前生效配置保持一致。部署时若目标目录缺少对应配置文件，会从 `install/` 复制一份作为起点；已有配置绝不被覆盖。
 
@@ -53,7 +53,7 @@ AI 用量认证仍由现有查询助手处理，配置、加密密钥和缓存�
 可额外运行实际传感器测试：
 
 ```powershell
-python tests/temperature_smoke.py "artifacts/build/x64/Debug (lite)/TrafficMonitor.exe"
+python tests/temperature_smoke.py "artifacts/build/x64/Debug (lite)/SimpleTaskbarMonitor.exe"
 ```
 
 预先存在的临时诊断改动保存在 `artifacts/before-native-refactor/`。`.origtest/` 保留不动。

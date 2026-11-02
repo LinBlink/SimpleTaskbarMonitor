@@ -10,7 +10,7 @@ cl /nologo /std:c++20 /utf-8 /EHsc /MT tests\if_table_snapshot_test.cpp /Fo:arti
 if errorlevel 1 exit /b 1
 artifacts\tests\if_table_snapshot_test.exe
 if errorlevel 1 exit /b 1
-cl /nologo /std:c++20 /utf-8 /EHsc /MT /Iinclude tests\builtin_features_test.cpp TrafficMonitor\Builtin\BuiltinFeatures.cpp TrafficMonitor\Builtin\AIUsage.cpp TrafficMonitor\Builtin\DualCountdown.cpp TrafficMonitor\Builtin\Power.cpp /Fo:artifacts\tests\ /Fe:artifacts\tests\builtin_features_test.exe /link shell32.lib user32.lib
+cl /nologo /std:c++20 /utf-8 /EHsc /MT /Iinclude tests\builtin_features_test.cpp SimpleTaskbarMonitor\Builtin\BuiltinFeatures.cpp SimpleTaskbarMonitor\Builtin\AIUsage.cpp SimpleTaskbarMonitor\Builtin\DualCountdown.cpp SimpleTaskbarMonitor\Builtin\Power.cpp /Fo:artifacts\tests\ /Fe:artifacts\tests\builtin_features_test.exe /link shell32.lib user32.lib
 if errorlevel 1 exit /b 1
 artifacts\tests\builtin_features_test.exe
 if errorlevel 1 exit /b 1
@@ -28,9 +28,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File build.ps1 -Configuration "De
 if errorlevel 1 exit /b 1
 powershell -NoProfile -ExecutionPolicy Bypass -File tests\temperature_values_test.ps1 -Worker "artifacts\build\x64\Debug (lite)\sensors\TemperatureWorker.exe"
 if errorlevel 1 exit /b 1
-python tests\taskbar_smoke.py "artifacts\build\x64\Debug (lite)\TrafficMonitor.exe"
+python tests\taskbar_smoke.py "artifacts\build\x64\Debug (lite)\SimpleTaskbarMonitor.exe"
 if errorlevel 1 exit /b 1
-python tests\compact_ai_smoke.py "artifacts\build\x64\Debug (lite)\TrafficMonitor.exe"
+python tests\compact_ai_smoke.py "artifacts\build\x64\Debug (lite)\SimpleTaskbarMonitor.exe"
 if errorlevel 1 exit /b 1
-python tests\reset_alert_smoke.py "artifacts\build\x64\Debug (lite)\TrafficMonitor.exe"
+python tests\reset_alert_smoke.py "artifacts\build\x64\Debug (lite)\SimpleTaskbarMonitor.exe"
 exit /b %errorlevel%

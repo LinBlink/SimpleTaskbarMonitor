@@ -27,8 +27,8 @@ def find(pid):
         if owner.value==pid:
             title=C.create_unicode_buffer(256);cls=C.create_unicode_buffer(256)
             u.GetWindowTextW(h,title,256);u.GetClassNameW(h,cls,256)
-            if title.value=='TrafficMonitorTaskbarWindow':result['display']=h
-            if cls.value=='TrafficMonitor_r7XZaS4p':result['core']=h
+            if title.value=='SimpleTaskbarMonitorTaskbarWindow':result['display']=h
+            if cls.value=='SimpleTaskbarMonitor_r7XZaS4p':result['core']=h
         return True
     u.EnumChildWindows(u.GetDesktopWindow(),visit,0)
     return result
@@ -44,7 +44,7 @@ def highlighted(h):
 exe=Path(sys.argv[1]).resolve()
 assert exe.parent.name.startswith('Debug'), 'Use the isolated Debug mutex'
 with tempfile.TemporaryDirectory(prefix='trafficmonitor-reset-') as temp:
-    root=Path(temp);shutil.copy2(exe,root/'TrafficMonitor.exe')
+    root=Path(temp);shutil.copy2(exe,root/'SimpleTaskbarMonitor.exe')
     (root/'plugins').mkdir()
     (root/'plugins/AIUsage.ini').write_text('[settings]\nEnableQueries=0\n')
     (root/'config.ini').write_text('[general]\nmonitor_time_span=200\n[task_bar]\ntbar_display_item=0\nplugin_display_item=AIUsageCodexSummary,AIUsageClaudeSummary\nhorizontal_arrange=true\ntask_bar_back_color=1\nauto_set_background_color=false\ndisable_d2d=true\n[other]\nno_multistart_warning=true\n')
@@ -53,7 +53,7 @@ with tempfile.TemporaryDirectory(prefix='trafficmonitor-reset-') as temp:
         now=int(time.time())
         cache.write_text(f'[codex5h]\nvalue=17%\nstatus=OK\nupdated={now}\nresetEpoch={reset}\n[claude5h]\nvalue=54%\nstatus=OK\nupdated={now}\nresetEpoch={now+18000}\n',encoding='utf-8')
     seed(int(time.time())-100)
-    process=subprocess.Popen([str(root/'TrafficMonitor.exe')],cwd=root)
+    process=subprocess.Popen([str(root/'SimpleTaskbarMonitor.exe')],cwd=root)
     try:
         time.sleep(3);handles=find(process.pid)
         assert 'display' in handles and 'core' in handles, handles

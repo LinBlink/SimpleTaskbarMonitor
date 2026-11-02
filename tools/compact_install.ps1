@@ -1,7 +1,7 @@
-﻿param([string]$Destination='C:\_FLEX\TrafficMonitor',[string]$ArchiveRoot)
+param([string]$Destination='C:\_FLEX\TrafficMonitor',[string]$ArchiveRoot)
 $ErrorActionPreference='Stop'
 $target=[IO.Path]::GetFullPath($Destination).TrimEnd('\')
-if (!(Test-Path -LiteralPath (Join-Path $target 'TrafficMonitor.exe')) -or !(Test-Path -LiteralPath (Join-Path $target '.deployment.json'))) {throw 'Expected a source-deployed installation.'}
+if (!(Test-Path -LiteralPath (Join-Path $target 'SimpleTaskbarMonitor.exe')) -or !(Test-Path -LiteralPath (Join-Path $target '.deployment.json'))) {throw 'Expected a source-deployed installation.'}
 if (!$ArchiveRoot) {$ArchiveRoot=$target+'-archive'}
 $archiveBase=[IO.Path]::GetFullPath($ArchiveRoot).TrimEnd('\')
 if ($archiveBase -eq $target -or $archiveBase.StartsWith($target+'\',[StringComparison]::OrdinalIgnoreCase)) {throw 'Archive must be outside the installation.'}
@@ -21,17 +21,18 @@ public static class CompactInstallationWindow {
  [DllImport("user32.dll",CharSet=CharSet.Unicode)] static extern int GetClassName(IntPtr h,StringBuilder name,int max);
  [DllImport("user32.dll")] static extern bool PostMessage(IntPtr h,uint msg,IntPtr w,IntPtr l);
  public static void Close(int target) {EnumWindows((h,p)=> {uint pid;GetWindowThreadProcessId(h,out pid);var name=new StringBuilder(128);GetClassName(h,name,128);
- if(pid==target && name.ToString()=="TrafficMonitor_r7XZaS4p") PostMessage(h,0x10,IntPtr.Zero,IntPtr.Zero);return true;},IntPtr.Zero);}
+ var cls=name.ToString();if(pid==target && (cls=="SimpleTaskbarMonitor_r7XZaS4p" || cls=="TrafficMonitor_r7XZaS4p")) PostMessage(h,0x10,IntPtr.Zero,IntPtr.Zero);return true;},IntPtr.Zero);}
 }'
-$binary=Join-Path $target 'TrafficMonitor.exe'
-$running=@(Get-Process TrafficMonitor -ErrorAction SilentlyContinue | Where-Object {$_.Path -eq $binary})
+$binary=Join-Path $target 'SimpleTaskbarMonitor.exe'
+$legacyBinary=Join-Path $target 'TrafficMonitor.exe'
+$running=@(Get-Process -ErrorAction SilentlyContinue | Where-Object {$_.Path -eq $binary -or $_.Path -eq $legacyBinary})
 foreach($instance in $running) {
     [CompactInstallationWindow]::Close($instance.Id)
     if(!$instance.WaitForExit(12000)) {throw 'Application did not close; no runtime files moved.'}
 }
 try {
     $preserved=@{}
-    $keep=@('TrafficMonitor.exe','config.ini','global_cfg.ini','history_traffic.dat')
+    $keep=@('SimpleTaskbarMonitor.exe','config.ini','global_cfg.ini','history_traffic.dat')
     $keep+=@(Get-ChildItem -LiteralPath $target -Directory | Where-Object {$_.Name -in @('plugins','sensors','language')} | ForEach-Object {Get-ChildItem -LiteralPath $_.FullName -Recurse -File} | ForEach-Object {$_.FullName.Substring($target.Length+1)})
     foreach($name in $keep) {
         $file=Join-Path $target $name
@@ -67,6 +68,6 @@ try {
 } finally {
     if($running.Count) {
         . (Join-Path $PSScriptRoot 'start_installation.ps1')
-        Start-TrafficMonitorInstallation -Executable $binary
+        Start-SimpleTaskbarInstallation -Executable $binary
     }
 }
