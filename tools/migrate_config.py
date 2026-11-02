@@ -10,6 +10,69 @@ NATIVE_IDS=AI_IDS+['CustomDualCountdown','b5R30ITQ','BatteryPowerMon','BatteryPe
 CURRENT_IDS=[x for x in NORMAL_IDS if x not in ('hdd_temp_string','main_board_temp_string')]+NATIVE_IDS
 OLD_V5_IDS=[x for x in NORMAL_IDS if x not in ('hdd_temp_string','main_board_temp_string')]+['AIUsageMiniMaxSummary','AIUsageCodexSummary','AIUsageCursorSummary','AIUsageClaudeSummary','AIUsageKimiSummary','AIUsageAntigravitySummary','AIUsageAntigravityClaudeSummary','AIUsageAntigravityArgonSummary','CustomDualCountdown','b5R30ITQ','BatteryPowerMon','BatteryPercentageMon','BatteryCapacityMon','BatteryVoltageMon','BatteryTimeMon']
 
+CLEAN_STRINGS = {
+    'task_bar': {
+        'up_string': '"↑: "',
+        'down_string': '"↓: "',
+        'total_speed_string': '"↑↓: "',
+        'gpu_string': '"GPU: "',
+        'cpu_temp_string': '"CPU: "',
+        'cpu_freq_string': '"FREQ: "',
+        'gpu_temp_string': '"GPU: "',
+        'hdd_temp_string': '"HDD: "',
+        'main_board_temp_string': '"MBD: "',
+        'hdd_string': '"HDD: "',
+        'today_traffic_string': '"TRF: "',
+    },
+    'config': {
+        'up_string': '"UP: "',
+        'down_string': '"DN: "',
+        'gpu_string': '"GPU: "',
+        'gpu_temp_string': '"GPU: "',
+        'hdd_temp_string': '"HDD: "',
+        'main_board_temp_string': '"MBD: "',
+        'hdd_string': '"HDD: "',
+        'font_name': 'Segoe UI',
+    },
+    'main_window': {
+        'up_string': '"UP: "',
+        'down_string': '"DN: "',
+        'gpu_string': '"GPU: "',
+        'gpu_temp_string': '"GPU: "',
+        'hdd_temp_string': '"HDD: "',
+        'main_board_temp_string': '"MBD: "',
+        'hdd_string': '"HDD: "',
+        'font_name': 'Segoe UI',
+    },
+    'plugin_display_str_taskbar_window': {
+        'b5R30ITQ': 'BAT:',
+        'BatteryPowerMon': 'PWR:',
+        'BatteryPercentageMon': 'BAT:',
+        'BatteryCapacityMon': 'CAP:',
+        'BatteryVoltageMon': 'VOL:',
+        'BatteryTimeMon': 'TL:',
+        'o282ffc4': 'Date',
+        'ra1YX2g1': 'Time',
+        'AIUsageMiniMaxWeek': '"MM W: "',
+        'AIUsageCodexWeek': '"CX W: "',
+        'AIUsageMiniMaxWeekReset': '"MM: "',
+        'AIUsageCodexWeekReset': '"CX: "',
+        'AIUsageCursorReset': '"CU: "',
+        'AIUsageClaudeWeek': '"CL W: "',
+        'AIUsageClaudeWeekReset': '"CL: "',
+    },
+    'plugin_display_str_main_window': {
+        'b5R30ITQ': 'BAT:',
+        'BatteryPowerMon': 'PW:',
+        'BatteryPercentageMon': 'BAT:',
+        'BatteryCapacityMon': 'CAP:',
+        'BatteryVoltageMon': 'VOL:',
+        'BatteryTimeMon': 'TL:',
+        'o282ffc4': 'Date',
+        'ra1YX2g1': 'Time',
+    }
+}
+
 def summary_id(item):
     for provider in ['MiniMax','Codex','Cursor','Claude','Kimi','Antigravity']:
         if item.startswith('AIUsage'+provider):return 'AIUsage'+provider+'Summary'
@@ -74,6 +137,21 @@ def migrate(path,selection_profile=None):
     for ai_key,short_lbl in (('AIUsageMiniMaxSummary','MM'),('AIUsageCodexSummary','CX'),('AIUsageCursorSummary','CU'),('AIUsageClaudeSummary','CL'),('AIUsageKimiSummary','KI'),('AIUsageAntigravitySummary','AG')):
         if value(config,'plugin_display_str_taskbar_window',ai_key):
             text=put(text,'plugin_display_str_taskbar_window',ai_key,short_lbl)
+    # Sanitize any mojibake or Chinese strings across known sections
+    for sec, entries_dict in CLEAN_STRINGS.items():
+        for k, clean_val in entries_dict.items():
+            curr = value(config, sec, k)
+            if curr:
+                # Check for mojibake or Chinese or missing arrows
+                is_arrow_key = k in ('up_string', 'down_string', 'total_speed_string')
+                if sec == 'task_bar':
+                    needs_clean = any(ord(c) > 127 for c in curr) or (is_arrow_key and ('↑' not in curr and '↓' not in curr))
+                else:
+                    needs_clean = any(ord(c) > 127 for c in curr)
+                if needs_clean:
+                    text=put(text, sec, k, clean_val)
+    if value(config,'task_bar','font_name') == '微软雅黑':
+        text=put(text,'task_bar','font_name','Segoe UI')
     selected=value(config,'task_bar','plugin_display_item').split(',')
     mask=int(value(config,'task_bar','tbar_display_item','3'))
     if selection_profile:
@@ -82,12 +160,12 @@ def migrate(path,selection_profile=None):
         mask|=int(value(old,'task_bar','tbar_display_item','0'))
     version=value(config,'app','builtin_configuration_version')
     selected={summary_id(x) for x in selected}
-    if version!='6': selected.update(('AIUsageKimiSummary','AIUsageAntigravitySummary'))
+    if version not in ('6', '7'): selected.update(('AIUsageKimiSummary','AIUsageAntigravitySummary'))
     selected=[x for x in NATIVE_IDS if x in selected]
     text=put(text,'task_bar','plugin_display_item',','.join(selected))
     text=put(text,'task_bar','tbar_display_item',mask|(1<<5)|(1<<6))
     text=put(text,'general','hardware_monitor_item',int(value(config,'general','hardware_monitor_item','0'))|3)
-    if version!='6':
+    if version not in ('6', '7'):
         saved_ids=value(config,'task_bar','task_bar_text_color_item_ids')
         old_ids=OLD_V5_IDS if version=='5' else (CURRENT_IDS if version=='4' else (saved_ids.split(',') if saved_ids else legacy))
         order=[]
@@ -99,8 +177,8 @@ def migrate(path,selection_profile=None):
                 if new_index not in order:order.append(new_index)
         order += [i for i in range(len(CURRENT_IDS)) if i not in order]
         text=put(text,'task_bar','item_order',','.join(map(str,order)))
-        text=put(text,'app','builtin_configuration_version','6')
-    path.write_bytes(text.encode(encoding))
+    text=put(text,'app','builtin_configuration_version','7')
+    path.write_bytes(text.encode('utf-8-sig'))
     return len(selected)
 
 if __name__=='__main__':

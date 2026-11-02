@@ -12,7 +12,9 @@ static std::wstring Read(const wchar_t* key,const wchar_t* fallback) {
 }
 static std::wstring names[2],dates[2];
 static void Load() {
-    names[0]=Read(L"Name1",L"日期1").substr(0,8); names[1]=Read(L"Name2",L"日期2").substr(0,8);
+    names[0]=Read(L"Name1",L"Date 1").substr(0,8); names[1]=Read(L"Name2",L"Date 2").substr(0,8);
+    if (names[0] == L"\x65e5\x671f" L"1") names[0] = L"Date 1";
+    if (names[1] == L"\x65e5\x671f" L"2") names[1] = L"Date 2";
     dates[0]=Read(L"Date1",L"");dates[1]=Read(L"Date2",L"");
 }
 static INT_PTR CALLBACK SettingsProc(HWND dialog,UINT message,WPARAM wParam,LPARAM) {
@@ -32,7 +34,7 @@ static INT_PTR CALLBACK SettingsProc(HWND dialog,UINT message,WPARAM wParam,LPAR
             for(int i=0;i<2;i++) {
                 SYSTEMTIME target{};
                 if(*d[i] && !Countdown::ParseDate(d[i],target)) {
-                    MessageBoxW(dialog,L"请输入有效日期，格式为 YYYY-MM-DD，例如 2026-12-31。\n留空表示暂不设置。",L"日期无效",MB_OK|MB_ICONWARNING);
+                    MessageBoxW(dialog,L"Please enter a valid date in YYYY-MM-DD format, e.g. 2026-12-31.\nLeave empty to unset.",L"Invalid Date",MB_OK|MB_ICONWARNING);
                     SetFocus(GetDlgItem(dialog,i==0?IDC_COUNTDOWN_DATE1:IDC_COUNTDOWN_DATE2));return TRUE;
                 }
             }
@@ -46,7 +48,7 @@ static INT_PTR CALLBACK SettingsProc(HWND dialog,UINT message,WPARAM wParam,LPAR
             ok=(WritePrivateProfileStringW(L"countdown",L"Name2",n[1],path.c_str())!=0)&&ok;
             ok=(WritePrivateProfileStringW(L"countdown",L"Date1",d[0],path.c_str())!=0)&&ok;
             ok=(WritePrivateProfileStringW(L"countdown",L"Date2",d[1],path.c_str())!=0)&&ok;
-            if(!ok) {MessageBoxW(dialog,L"无法保存设置，请检查功能数据目录的写入权限。",L"保存失败",MB_OK|MB_ICONERROR);return TRUE;}
+            if(!ok) {MessageBoxW(dialog,L"Could not save settings. Check write permissions for the data directory.",L"Save Failed",MB_OK|MB_ICONERROR);return TRUE;}
             EndDialog(dialog,IDOK);return TRUE;
         }
     }
@@ -61,7 +63,7 @@ public:
         LONG next=1-current;values[next]=std::move(value);samples[next]=std::move(sample);
         InterlockedExchange(&current,next);
     }
-    const wchar_t* GetItemName()const override {return L"双倒数日";}
+    const wchar_t* GetItemName()const override {return L"Dual Countdown";}
     const wchar_t* GetItemId()const override {return L"CustomDualCountdown";}
     const wchar_t* GetItemLableText()const override {return L"";}
     const wchar_t* GetItemValueText()const override {return values[current].c_str();}
@@ -76,21 +78,21 @@ public:
     IPluginItem* GetItem(int i)override {return i==0?&item:nullptr;}
     void DataRequired()override {
         Load();SYSTEMTIME today{};GetLocalTime(&today);
-        std::wstring value,sample,tooltip=L"双倒数日（按本地日历日期计算）\n";
+        std::wstring value,sample,tooltip=L"Dual Countdown (local calendar days)\n";
         for(int i=0;i<2;i++) {
             auto prefix=names[i].empty()?L"":names[i]+L" ";
             if(i) {value+=L" / ";sample+=L" / ";}
             auto days=Countdown::DayText(dates[i],today);
             value+=prefix+days;sample+=prefix+L"-9999d";
-            tooltip+=prefix+(dates[i].empty()?L"未设置":dates[i])+L"："+days+L"\n";
+            tooltip+=prefix+(dates[i].empty()?L"Not set":dates[i])+L": "+days+L"\n";
         }
-        tooltip+=L"当天为0d，负数表示日期已过。功能设置可修改两个日期。";
+        tooltip+=L"0d means today; negative means past. Use Options to edit target dates.";
         item.Publish(std::move(value),std::move(sample));
         LONG next=1-tooltipCurrent;tooltips[next]=std::move(tooltip);InterlockedExchange(&tooltipCurrent,next);
     }
     const wchar_t* GetTooltipInfo()override {return tooltips[tooltipCurrent].c_str();}
     const wchar_t* GetInfo(PluginInfoIndex i)override {
-        switch(i) {case TMI_NAME:return L"双倒数日";case TMI_DESCRIPTION:return L"同一字段显示两个自定义日期的剩余天数";
+        switch(i) {case TMI_NAME:return L"Dual Countdown";case TMI_DESCRIPTION:return L"Displays remaining days for two custom target dates";
         case TMI_AUTHOR:return L"Local Countdown Plugin";case TMI_VERSION:return L"1.0.0";default:return L"";}
     }
     OptionReturn ShowOptionsDialog(void* parent)override {

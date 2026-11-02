@@ -5,7 +5,7 @@
 CIniHelper::CIniHelper(const wstring& file_path, bool force_utf8)
 {
     m_file_path = file_path;
-    ifstream file_stream{ file_path };
+    ifstream file_stream{ file_path, std::ios::binary };
     if (!file_stream.is_open())
         return;
     // 获取文件大小
@@ -14,11 +14,12 @@ CIniHelper::CIniHelper(const wstring& file_path, bool force_utf8)
     file_stream.seekg(0, std::ios::beg);
     // 读取文件内容
     string ini_str;
-    ini_str.resize(file_size + 1);
-    file_stream.read(&ini_str[0], file_size);
+    ini_str.resize(file_size);
+    if (file_size > 0)
+        file_stream.read(&ini_str[0], file_size);
     // 检查并添加末尾的空行
-    if (!ini_str.empty() && ini_str.back() != L'\n')
-        ini_str.push_back(L'\n');
+    if (!ini_str.empty() && ini_str.back() != '\n')
+        ini_str.push_back('\n');
     bool is_utf8;
     if (force_utf8)
     {
@@ -27,7 +28,7 @@ CIniHelper::CIniHelper(const wstring& file_path, bool force_utf8)
     else
     {
         //判断文件是否是utf8编码
-        if (ini_str.size() >= 3 && ini_str[0] == -17 && ini_str[1] == -69 && ini_str[2] == -65)
+        if (ini_str.size() >= 3 && (unsigned char)ini_str[0] == 0xEF && (unsigned char)ini_str[1] == 0xBB && (unsigned char)ini_str[2] == 0xBF)
         {
             //如果有UTF8的BOM，则删除BOM
             is_utf8 = true;
@@ -35,9 +36,10 @@ CIniHelper::CIniHelper(const wstring& file_path, bool force_utf8)
         }
         else
         {
-            is_utf8 = false;
+            is_utf8 = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, ini_str.c_str(), -1, nullptr, 0) > 0;
         }
     }
+    m_save_as_utf8 = true;
     //转换成Unicode
     m_ini_str = CCommon::StrToUnicode(ini_str.c_str(), is_utf8);
 }
@@ -267,18 +269,16 @@ bool CIniHelper::Save()
 {
     if (m_file_path.empty())
         return false;
-    ofstream file_stream{ m_file_path };
+    ofstream file_stream{ m_file_path, std::ios::binary };
     if(file_stream.fail())
         return false;
+    m_save_as_utf8 = true;
     string ini_str{ CCommon::UnicodeToStr(m_ini_str.c_str(), m_save_as_utf8) };
-    if (m_save_as_utf8)     //如果以UTF8编码保存，先插入BOM
-    {
-        string utf8_bom;
-        utf8_bom.push_back(-17);
-        utf8_bom.push_back(-69);
-        utf8_bom.push_back(-65);
-        file_stream << utf8_bom;
-    }
+    string utf8_bom;
+    utf8_bom.push_back('\xEF');
+    utf8_bom.push_back('\xBB');
+    utf8_bom.push_back('\xBF');
+    file_stream << utf8_bom;
 
     file_stream << ini_str;
     return true;

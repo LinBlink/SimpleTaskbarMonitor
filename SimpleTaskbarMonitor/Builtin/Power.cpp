@@ -80,17 +80,17 @@ public:
     const wchar_t* GetItemValueSampleText()const override{return sample;}
 };
 std::wstring PowerTooltip(const Builtin::PowerSnapshot& s) {
-    if(!s.present) return L"未检测到系统电池；不支持的读数显示 --。";
-    auto supply=s.ac==1?L"外接电源":s.ac==0?L"电池供电":L"电源状态未知";
-    return std::wstring(supply)+(s.charging?L"，充电中":L"")+L"\n电量："+Builtin::Percentage(s)+
-        L"\n电池充放电功率："+Builtin::Measurement(s.watts,L" W")+
-        L"\n剩余容量："+Builtin::Measurement(s.wattHours,L" Wh")+
-        L"\n电压（首块电池）："+Builtin::Measurement(s.volts,L" V")+
-        L"\n估计续航："+Builtin::Measurement(s.hours,L" h")+
-        L"\n正功率表示充电，负功率表示放电；该读数不是整机插座功耗。";
+    if(!s.present) return L"No system battery detected; unsupported readings show --.";
+    auto supply=s.ac==1?L"AC Power":s.ac==0?L"On Battery":L"Power status unknown";
+    return std::wstring(supply)+(s.charging?L", Charging":L"")+L"\nBattery Level: "+Builtin::Percentage(s)+
+        L"\nBattery Power: "+Builtin::Measurement(s.watts,L" W")+
+        L"\nRemaining Capacity: "+Builtin::Measurement(s.wattHours,L" Wh")+
+        L"\nVoltage (first battery): "+Builtin::Measurement(s.volts,L" V")+
+        L"\nEstimated Time Remaining: "+Builtin::Measurement(s.hours,L" h")+
+        L"\nPositive power means charging, negative means discharging.";
 }
 class BatteryFeature: public ITMPlugin {
-    ValueItem item{L"电池电量",L"b5R30ITQ",L"电池: ",L"100%"};
+    ValueItem item{L"Battery Level",L"b5R30ITQ",L"BAT: ",L"100%"};
     std::wstring tooltip;
 public:
     IPluginItem* GetItem(int i)override{return i==0?&item:nullptr;}
@@ -104,15 +104,15 @@ public:
     }
     const wchar_t* GetTooltipInfo()override{return tooltip.c_str();}
     const wchar_t* GetInfo(PluginInfoIndex i)override{
-        switch(i){case TMI_NAME:return L"电池";case TMI_DESCRIPTION:return L"内置 Windows 电池电量与充电状态";case TMI_AUTHOR:return L"SimpleTaskbarMonitor";case TMI_VERSION:return L"1.0";default:return L"";}
+        switch(i){case TMI_NAME:return L"Battery";case TMI_DESCRIPTION:return L"Built-in Windows battery level and charging status";case TMI_AUTHOR:return L"SimpleTaskbarMonitor";case TMI_VERSION:return L"1.0";default:return L"";}
     }
 };
 class PowerFeature: public ITMPlugin {
-    ValueItem items[5]={{L"电池充放电功率",L"BatteryPowerMon",L"PWR: ",L"-100.0W"},
-        {L"电池电量百分比",L"BatteryPercentageMon",L"Battery ",L"100%"},
-        {L"电池剩余容量",L"BatteryCapacityMon",L"Cap: ",L"100.0Wh"},
-        {L"电池电压",L"BatteryVoltageMon",L"Volt: ",L"20.0V"},
-        {L"电池预计续航",L"BatteryTimeMon",L"Time: ",L"100.0h"}};
+    ValueItem items[5]={{L"Battery Power",L"BatteryPowerMon",L"PWR: ",L"-100.0W"},
+        {L"Battery Percentage",L"BatteryPercentageMon",L"BAT: ",L"100%"},
+        {L"Battery Capacity",L"BatteryCapacityMon",L"CAP: ",L"100.0Wh"},
+        {L"Battery Voltage",L"BatteryVoltageMon",L"VOL: ",L"20.0V"},
+        {L"Battery Time Remaining",L"BatteryTimeMon",L"TL: ",L"100.0h"}};
     std::wstring tooltip;
 public:
     IPluginItem* GetItem(int i)override{return i>=0 && i<5?&items[i]:nullptr;}
@@ -132,7 +132,7 @@ public:
     }
     const wchar_t* GetTooltipInfo()override{return tooltip.c_str();}
     const wchar_t* GetInfo(PluginInfoIndex i)override{
-        switch(i){case TMI_NAME:return L"功耗";case TMI_DESCRIPTION:return L"内置电池功率、容量、电压、续航，无需额外驱动";case TMI_AUTHOR:return L"SimpleTaskbarMonitor";case TMI_VERSION:return L"1.0";default:return L"";}
+        switch(i){case TMI_NAME:return L"Power";case TMI_DESCRIPTION:return L"Built-in battery power, capacity, voltage and remaining time";case TMI_AUTHOR:return L"SimpleTaskbarMonitor";case TMI_VERSION:return L"1.0";default:return L"";}
     }
 };
 }

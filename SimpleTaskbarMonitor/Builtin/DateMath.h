@@ -26,7 +26,7 @@ inline long long DaysUntil(const SYSTEMTIME& target,const SYSTEMTIME& today) {
 inline std::wstring DayText(const std::wstring& date,const SYSTEMTIME& today) {
     if(date.empty())return L"--";
     SYSTEMTIME target{};
-    if(!ParseDate(date,target))return L"日期错误";
+    if(!ParseDate(date,target))return L"Err";
     return std::to_wstring(DaysUntil(target,today))+L"d";
 }
 }
