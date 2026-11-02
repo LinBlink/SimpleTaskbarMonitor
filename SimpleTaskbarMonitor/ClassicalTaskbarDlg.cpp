@@ -3,6 +3,12 @@
 
 void CClassicalTaskbarDlg::AdjustTaskbarWndPos(bool force_adjust)
 {
+    if (m_hBar == NULL)
+    {
+        m_rect.SetRect(0, 0, m_window_width, m_window_height);
+        MoveWindow(m_rect);
+        return;
+    }
     ::GetWindowRect(m_hMin, m_rcMin); //获得最小化窗口的区域
     ::GetWindowRect(m_hBar, m_rcBar); //获得二级容器的区域
 

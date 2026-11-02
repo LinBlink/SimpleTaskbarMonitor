@@ -7,5 +7,4 @@ if ($key.Length -gt 0) {
     [IO.File]::WriteAllText((Join-Path $PSScriptRoot 'AIUsage.minimax.key'), $encrypted)
     Write-Host 'Saved encrypted key.'
 }
-Start-Process notepad.exe -ArgumentList ('"' + (Join-Path $PSScriptRoot 'AIUsage.ini') + '"')
-Write-Host 'Set MiniMaxRegion=cn or global in AIUsage.ini. Codex uses existing ChatGPT login.'
+Write-Host 'Set region and model in Options > AI Usage. Other services use their existing sign-in.'

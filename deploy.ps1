@@ -90,8 +90,13 @@ New-Item -ItemType Directory -Path $sensorTarget -Force | Out-Null
 Copy-Item -Path (Join-Path $built 'sensors\*') -Destination $sensorTarget -Force
 $helperTarget=Join-Path $destinationPath 'plugins'
 New-Item -ItemType Directory -Path $helperTarget -Force | Out-Null
-# Only source-controlled helpers; never copy credentials, INI settings or caches.
-foreach($helper in Get-ChildItem -LiteralPath (Join-Path $root 'helpers\AIUsage') -File) {
+$aiSettings=Join-Path $helperTarget 'AIUsage.ini'
+if(!(Test-Path -LiteralPath $aiSettings)) {
+    Copy-Item -LiteralPath (Join-Path $root 'helpers\AIUsage\AIUsage.defaults.ini') -Destination $aiSettings
+    Write-Host "Seeded AI usage configuration: $aiSettings"
+}
+# Only source-controlled scripts; never overwrite credentials, INI settings or caches.
+foreach($helper in Get-ChildItem -LiteralPath (Join-Path $root 'helpers\AIUsage') -File -Filter '*.ps1') {
     $old=Join-Path $helperTarget $helper.Name
     if(Test-Path -LiteralPath $old) {Copy-Item -LiteralPath $old -Destination $backup -Force}
     Copy-Item -LiteralPath $helper.FullName -Destination $old -Force

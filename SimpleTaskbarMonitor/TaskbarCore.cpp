@@ -94,6 +94,7 @@ BEGIN_MESSAGE_MAP(CTaskbarCore, CDialog)
     ON_REGISTERED_MESSAGE(m_WM_TASKBARCREATED, &CTaskbarCore::OnTaskBarCreated)
     ON_COMMAND(ID_OPTIONS, &CTaskbarCore::OnOptions)
     ON_COMMAND(ID_OPTIONS2, &CTaskbarCore::OnOptions2)
+    ON_COMMAND(ID_AI_USAGE_OPTIONS, &CTaskbarCore::OnAIUsageOptions)
     ON_MESSAGE(WM_EXITMENULOOP, &CTaskbarCore::OnExitmenuloop)
     ON_COMMAND(ID_CHANGE_NOTIFY_ICON, &CTaskbarCore::OnChangeNotifyIcon)
     ON_MESSAGE(WM_TASKBAR_MENU_POPED_UP, &CTaskbarCore::OnTaskbarMenuPopedUp)
@@ -1533,6 +1534,12 @@ void CTaskbarCore::OnOptions2()
 }
 
 
+void CTaskbarCore::OnAIUsageOptions()
+{
+    _OnOptions(2, this);
+}
+
+
 afx_msg LRESULT CTaskbarCore::OnExitmenuloop(WPARAM wParam, LPARAM lParam)
 {
     m_menu_popuped = false;
@@ -1762,7 +1769,11 @@ void CTaskbarCore::OnPluginOptionsTaksbar()
     {
         //找到对应的插件
         ITMPlugin* plugin = theApp.m_plugins.GetPluginByItem(m_tBarDlg->GetClickedItem().PluginItem());
-        if (plugin != nullptr)
+        if (plugin == Builtin::AIUsage())
+        {
+            _OnOptions(2, m_tBarDlg);
+        }
+        else if (plugin != nullptr)
         {
             //显示插件的选项设置
             auto rtn = plugin->ShowOptionsDialog(m_tBarDlg->GetSafeHwnd());

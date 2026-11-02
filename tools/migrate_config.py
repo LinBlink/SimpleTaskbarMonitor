@@ -5,12 +5,12 @@ from pathlib import Path
 import argparse, configparser, re
 
 NORMAL_IDS=['up_string','down_string','cpu_string','memory_string','gpu_string','cpu_temp_string','gpu_temp_string','hdd_temp_string','main_board_temp_string','hdd_string','total_speed_string','cpu_freq_string','today_traffic_string']
-AI_IDS=['AIUsageMiniMaxSummary','AIUsageCodexSummary','AIUsageCursorSummary','AIUsageClaudeSummary']
+AI_IDS=['AIUsageMiniMaxSummary','AIUsageCodexSummary','AIUsageCursorSummary','AIUsageClaudeSummary','AIUsageKimiSummary','AIUsageAntigravitySummary']
 NATIVE_IDS=AI_IDS+['CustomDualCountdown','b5R30ITQ','BatteryPowerMon','BatteryPercentageMon','BatteryCapacityMon','BatteryVoltageMon','BatteryTimeMon']
 CURRENT_IDS=[x for x in NORMAL_IDS if x not in ('hdd_temp_string','main_board_temp_string')]+NATIVE_IDS
 
 def summary_id(item):
-    for provider in ['MiniMax','Codex','Cursor','Claude']:
+    for provider in ['MiniMax','Codex','Cursor','Claude','Kimi','Antigravity']:
         if item.startswith('AIUsage'+provider):return 'AIUsage'+provider+'Summary'
     return item
 
@@ -62,12 +62,14 @@ def migrate(path,selection_profile=None):
         _,_,old=read(selection_profile)
         selected+=value(old,'task_bar','plugin_display_item').split(',')
         mask|=int(value(old,'task_bar','tbar_display_item','0'))
+    version=value(config,'app','builtin_configuration_version')
     selected={summary_id(x) for x in selected}
+    if version!='4': selected.update(('AIUsageKimiSummary','AIUsageAntigravitySummary'))
     selected=[x for x in NATIVE_IDS if x in selected]
     text=put(text,'task_bar','plugin_display_item',','.join(selected))
     text=put(text,'task_bar','tbar_display_item',mask|(1<<5)|(1<<6))
     text=put(text,'general','hardware_monitor_item',int(value(config,'general','hardware_monitor_item','0'))|3)
-    if value(config,'app','builtin_configuration_version')!='3':
+    if version!='4':
         saved_ids=value(config,'task_bar','task_bar_text_color_item_ids')
         old_ids=saved_ids.split(',') if saved_ids else legacy
         order=[]
@@ -79,7 +81,7 @@ def migrate(path,selection_profile=None):
                 if new_index not in order:order.append(new_index)
         order += [i for i in range(len(CURRENT_IDS)) if i not in order]
         text=put(text,'task_bar','item_order',','.join(map(str,order)))
-        text=put(text,'app','builtin_configuration_version','3')
+        text=put(text,'app','builtin_configuration_version','4')
     path.write_bytes(text.encode(encoding))
     return len(selected)
 

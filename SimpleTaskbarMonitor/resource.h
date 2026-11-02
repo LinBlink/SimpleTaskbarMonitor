@@ -79,6 +79,7 @@
 #define IDR_LANGUAGE                    346
 #define IDR_LANGUAGE_DEFAULT            347
 #define IDR_DISPLAY_ITEM_CONTEXT_MENU   348
+#define IDD_AI_USAGE_SETTINGS_DIALOG    349
 #define IDS_PLUGIN_DETAILS              388
 #define IDC_STATIC_INFO                 1001
 #define IDC_STATIC1                     1002
@@ -344,6 +345,19 @@
 #define IDC_MBD_TEMP_TIP_EDIT           1219
 #define IDC_AUTO_RUN_METHOD_REGESTRY_RADIO 1220
 #define IDC_AUTO_RUN_METHOD_TASK_SCHEDULE_RADIO 1221
+#define IDC_AI_USAGE_ENABLE_CHECK       1222
+#define IDC_AI_USAGE_REFRESH_EDIT       1223
+#define IDC_AI_USAGE_REFRESH_BUTTON     1224
+#define IDC_AI_USAGE_MINIMAX_CHECK      1225
+#define IDC_AI_USAGE_CODEX_CHECK        1226
+#define IDC_AI_USAGE_CURSOR_CHECK       1227
+#define IDC_AI_USAGE_CLAUDE_CHECK       1228
+#define IDC_AI_USAGE_KIMI_CHECK         1229
+#define IDC_AI_USAGE_ANTIGRAVITY_CHECK  1230
+#define IDC_AI_USAGE_MINIMAX_REGION_COMBO 1231
+#define IDC_AI_USAGE_MINIMAX_MODEL_EDIT 1232
+#define IDC_AI_USAGE_MINIMAX_KEY_BUTTON 1233
+#define IDC_AI_USAGE_STATUS_EDIT        1234
 #define ID_32771                        32771
 #define ID_NETWORK_INFO                 32772
 #define ID_32773                        32773
@@ -459,14 +473,15 @@
 #define ID_PLUGIN_COMMAND_START         33408
 #define ID_PLUGIN_COMMAND_MAX           33664
 #define ID_RESTORE_DEFAULT              33665
+#define ID_AI_USAGE_OPTIONS             33666
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        349
-#define _APS_NEXT_COMMAND_VALUE         33666
-#define _APS_NEXT_CONTROL_VALUE         1221
+#define _APS_NEXT_RESOURCE_VALUE        350
+#define _APS_NEXT_COMMAND_VALUE         33667
+#define _APS_NEXT_CONTROL_VALUE         1235
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

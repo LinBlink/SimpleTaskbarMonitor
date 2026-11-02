@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "TaskBarSettingsDlg.h"
 #include "GeneralSettingsDlg.h"
+#include "AIUsageSettingsDlg.h"
 #include "afxcmn.h"
 #include "CTabCtrlEx.h"
 #include "BaseDialog.h"
@@ -24,6 +25,7 @@ public:
 
     CTaskBarSettingsDlg m_tab1_dlg{ this };
     CGeneralSettingsDlg m_tab2_dlg{ this };
+    CAIUsageSettingsDlg m_tab3_dlg{ this };
 
 protected:
     CTabCtrlEx m_tab;

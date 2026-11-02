@@ -5,8 +5,8 @@
 
 namespace AIUsageLayout {
 inline int ColumnCount(const std::wstring& id) {
-    if (id == L"AIUsageCursorSummary") return 2;
-    if (id == L"AIUsageMiniMaxSummary" || id == L"AIUsageCodexSummary" || id == L"AIUsageClaudeSummary") return 4;
+    if (id == L"AIUsageCursorSummary" || id == L"AIUsageAntigravitySummary") return 2;
+    if (id == L"AIUsageMiniMaxSummary" || id == L"AIUsageCodexSummary" || id == L"AIUsageClaudeSummary" || id == L"AIUsageKimiSummary") return 4;
     return 0;
 }
 struct Column { int left{}, width{}, row{}; };

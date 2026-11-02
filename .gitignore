@@ -300,6 +300,7 @@ __pycache__/
 [Rr]elease (lite)/
 /SimpleTaskbarMonitor/compile_time.txt
 !/SimpleTaskbarMonitor/language/*.ini
+!/helpers/AIUsage/AIUsage.defaults.ini
 *.diagsession
 enc_temp*
 

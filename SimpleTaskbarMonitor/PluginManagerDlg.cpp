@@ -7,6 +7,7 @@
 #include "FilePathHelper.h"
 #include "PluginInfoDlg.h"
 #include "WIC.h"
+#include "Builtin/BuiltinFeatures.h"
 
 
 // CPluginManagerDlg 对话框
@@ -234,7 +235,12 @@ void CPluginManagerDlg::OnBnClickedOptinsButton()
     if (m_item_selected >= 0 && m_item_selected < static_cast<int>(theApp.m_plugins.GetPlugins().size()))
     {
         auto plugin_info = theApp.m_plugins.GetPlugins()[m_item_selected];
-        if (plugin_info.plugin != nullptr)
+        if (plugin_info.plugin == Builtin::AIUsage())
+        {
+            EndDialog(IDOK);
+            theApp.m_pMainWnd->PostMessage(WM_COMMAND, ID_AI_USAGE_OPTIONS);
+        }
+        else if (plugin_info.plugin != nullptr)
         {
             ITMPlugin::OptionReturn rtn = plugin_info.plugin->ShowOptionsDialog(m_hWnd);
             if (rtn == ITMPlugin::OR_OPTION_NOT_PROVIDED)

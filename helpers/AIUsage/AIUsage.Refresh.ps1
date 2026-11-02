@@ -2,10 +2,15 @@ param([switch]$LibraryOnly)
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/AIUsage.Cursor.ps1"
 . "$PSScriptRoot/AIUsage.Claude.ps1"
+. "$PSScriptRoot/AIUsage.Kimi.ps1"
+. "$PSScriptRoot/AIUsage.Antigravity.ps1"
 function Read-Settings {
     $settings = @{}
-    foreach ($line in [IO.File]::ReadAllLines((Join-Path $PSScriptRoot 'AIUsage.ini'))) {
-        if ($line -match '^\s*([^;#\[=]+?)\s*=\s*(.*?)\s*$') { $settings[$matches[1]] = $matches[2] }
+    $path = Join-Path $PSScriptRoot 'AIUsage.ini'
+    if (Test-Path -LiteralPath $path -PathType Leaf) {
+        foreach ($line in [IO.File]::ReadAllLines($path)) {
+            if ($line -match '^\s*([^;#\[=]+?)\s*=\s*(.*?)\s*$') { $settings[$matches[1]] = $matches[2] }
+        }
     }
     return $settings
 }
@@ -14,23 +19,24 @@ function Percent($remaining) {
     if ([double]::IsNaN($n) -or [double]::IsInfinity($n)) { throw 'Invalid percentage' }
     return ([math]::Round([math]::Max(0,[math]::Min(100,$n)),0).ToString('0',[cultureinfo]::InvariantCulture) + '%')
 }
-function Reset-Time($value) {
-    if ($null -eq $value -or "$value" -eq '') { return '' }
+function Reset-Epoch($value) {
+    if ($null -eq $value -or "$value" -eq '') { return 0 }
     try {
-        $n = [double]$value
-        if ($n -gt 100000000000) { $n /= 1000 }
-        return [DateTimeOffset]::FromUnixTimeSeconds([long]$n).LocalDateTime.ToString('MM-dd HH:mm')
-    } catch { return '' }
+        $n=[double]$value
+        if($n -gt 100000000000) { $n/=1000 }
+        return [long]$n
+    } catch {
+        try { return [DateTimeOffset]::Parse([string]$value,[cultureinfo]::InvariantCulture).ToUnixTimeSeconds() }
+        catch { return 0 }
+    }
+}
+function Reset-Time($value) {
+    $epoch=Reset-Epoch $value
+    if($epoch -le 0) { return '' }
+    return [DateTimeOffset]::FromUnixTimeSeconds($epoch).LocalDateTime.ToString('MM-dd HH:mm')
 }
 function Window($percent,$reset) {
-    $resetEpoch=0
-    if ($null -ne $reset -and "$reset" -ne '') {
-        try {
-            $n=[double]$reset
-            if($n -gt 100000000000) { $n/=1000 }
-            $resetEpoch=[long]$n
-        } catch { $resetEpoch=0 }
-    }
+    $resetEpoch=Reset-Epoch $reset
     return @{value=(Percent $percent);reset=(Reset-Time $reset);resetEpoch=$resetEpoch;status='OK';updated=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()}
 }
 function Parse-Codex($result) {
@@ -179,13 +185,17 @@ function Refresh-Usage {
     $settings = Read-Settings
     $path = Join-Path $PSScriptRoot 'AIUsage.cache.ini'
     $cache = Read-Cache $path
-    foreach ($provider in @('codex','minimax','cursor','claude')) {
+    foreach ($provider in @('codex','minimax','cursor','claude','kimi','antigravity')) {
         $keys = switch($provider) {
             'codex' { @('codex5h','codexWeek') }
             'minimax' { @('minimax5h','minimaxWeek') }
             'cursor' { @('cursorPlan') }
             'claude' { @('claude5h','claudeWeek') }
+            'kimi' { @('kimi5h','kimiWeek') }
+            'antigravity' { @('antigravityPlan') }
         }
+        $setting='Enable'+[cultureinfo]::InvariantCulture.TextInfo.ToTitleCase($provider)
+        if($settings.ContainsKey($setting) -and $settings[$setting] -eq '0') { continue }
         $now=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
         # An expired credential is checked locally; recheck each cycle so a renewed login
         # recovers immediately without waiting for the previous authentication cooldown.
@@ -196,6 +206,8 @@ function Refresh-Usage {
                 'minimax' { Fetch-MiniMax $settings }
                 'cursor' { Fetch-Cursor $settings }
                 'claude' { Fetch-Claude $settings }
+                'kimi' { Fetch-Kimi $settings }
+                'antigravity' { Fetch-Antigravity $settings }
             }
             foreach ($k in $keys) {
                 if ($fetched.ContainsKey($k)) { $cache[$k]=$fetched[$k] }
@@ -213,7 +225,7 @@ function Refresh-Usage {
         }
     }
     $lines = New-Object 'Collections.Generic.List[string]'
-    foreach ($k in @('minimax5h','minimaxWeek','codex5h','codexWeek','cursorPlan','claude5h','claudeWeek')) {
+    foreach ($k in @('minimax5h','minimaxWeek','codex5h','codexWeek','cursorPlan','claude5h','claudeWeek','kimi5h','kimiWeek','antigravityPlan')) {
         $lines.Add("[$k]")
         foreach ($field in @('value','reset','resetEpoch','updated','status','nextAttempt')) { $lines.Add("$field=$($cache[$k][$field])") }
     }

@@ -1,4 +1,4 @@
-﻿// TaskBarDlg.cpp : 实现文件
+// TaskBarDlg.cpp : 实现文件
 //
 
 #include "stdafx.h"
@@ -377,7 +377,9 @@ void CTaskBarDlg::DrawPluginItem(IDrawCommon& drawer, IPluginItem* item, CRect r
         CRect label_top{rect.left, rect.top, rect.left + label_width - DPI(4), middle};
         CRect label_bottom{label_top.left, middle, label_top.right, rect.bottom};
         drawer.DrawWindowText(label_top, theApp.m_taskbar_data.disp_str.GetConst(item).c_str(), label_text_color);
-        if (label_width > 0) drawer.DrawWindowText(label_bottom, count == 2 ? L"月" : L"周", label_text_color);
+        const wchar_t* second_label = count == 2 ? (std::wstring(item->GetItemId()) == L"AIUsageCursorSummary" ? L"MO" : L"RST") :
+            (std::wstring(item->GetItemId()) == L"AIUsageKimiSummary" ? L"W/M" : L"WK");
+        if (label_width > 0) drawer.DrawWindowText(label_bottom, second_label, label_text_color);
         const int left = rect.left + label_width;
         bool stale[2]{};
         for (int i = 0; i < count; ++i)
@@ -1027,6 +1029,8 @@ void CTaskBarDlg::UpdateToolTips()
     {
         CString tip_info;
         tip_info = GetMouseTipsInfo();
+        if (tip_info.GetLength() > 900)
+            tip_info = tip_info.Left(850) + L"\r\n... (truncated; see AI Usage settings for full status)";
         m_tool_tips.UpdateTipText(tip_info, this);
     }
 }

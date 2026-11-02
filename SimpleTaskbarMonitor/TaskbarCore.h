@@ -164,6 +164,7 @@ public:
     afx_msg LRESULT OnTaskBarCreated(WPARAM wParam, LPARAM lParam);
     afx_msg void OnOptions();
     afx_msg void OnOptions2();
+    afx_msg void OnAIUsageOptions();
 protected:
     afx_msg LRESULT OnExitmenuloop(WPARAM wParam, LPARAM lParam);
 public:

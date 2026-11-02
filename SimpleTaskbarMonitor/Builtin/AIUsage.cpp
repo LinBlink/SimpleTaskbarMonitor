@@ -27,26 +27,31 @@ public:
     const wchar_t* GetItemId() const override { return id; }
     const wchar_t* GetItemLableText() const override { return label; }
     const wchar_t* GetItemValueText() const override { return value.c_str(); }
-    const wchar_t* GetItemValueSampleText() const override { return std::wstring(id)==L"AIUsageCursorSummary"?L"100%*,31.0d*":L"100%*,5.0h*,100%*,168.0h*"; }
+    const wchar_t* GetItemValueSampleText() const override {
+        const std::wstring itemId=id;
+        return itemId==L"AIUsageCursorSummary" || itemId==L"AIUsageAntigravitySummary" ? L"100%*,31.0d*" : L"100%*,5.0h*,100%*,168.0h*";
+    }
 };
 class Plugin : public ITMPlugin {
-    Item items[4]={{L"MiniMax 用量（5h/周）",L"AIUsageMiniMaxSummary",L"MM:"},
-                   {L"Codex 用量（5h/周）",L"AIUsageCodexSummary",L"CX:"},
-                   {L"Cursor 用量（月）",L"AIUsageCursorSummary",L"CU:"},
-                   {L"Claude 用量（5h/周）",L"AIUsageClaudeSummary",L"CL:"}};
+    Item items[6]={{L"MiniMax usage (5h/week)",L"AIUsageMiniMaxSummary",L"MM:"},
+                   {L"Codex usage (5h/week)",L"AIUsageCodexSummary",L"CX:"},
+                   {L"Cursor usage (month)",L"AIUsageCursorSummary",L"CU:"},
+                   {L"Claude usage (5h/week)",L"AIUsageClaudeSummary",L"CL:"},
+                   {L"Kimi usage (5h/second period)",L"AIUsageKimiSummary",L"KI:"},
+                   {L"Google Antigravity usage (lowest model quota)",L"AIUsageAntigravitySummary",L"AG:"}};
     HANDLE process=nullptr;
     HANDLE job=nullptr;
     ULONGLONG next=0,started=0;
     std::wstring tooltip;
 public:
     ~Plugin() { if(job) CloseHandle(job); if(process) CloseHandle(process); }
-    IPluginItem* GetItem(int i) override { return i>=0 && i<4 ? &items[i] : nullptr; }
+    IPluginItem* GetItem(int i) override { return i>=0 && i<6 ? &items[i] : nullptr; }
     const wchar_t* GetInfo(PluginInfoIndex i) override {
         switch(i) {
-        case TMI_NAME:return L"MiniMax / Codex / Cursor / Claude 用量";
-        case TMI_DESCRIPTION:return L"订阅剩余额度，后台查询；* 表示数据过期。";
+        case TMI_NAME:return L"AI subscription usage";
+        case TMI_DESCRIPTION:return L"Remaining quota from MiniMax, Codex, Cursor, Claude, Kimi and Google Antigravity. * marks stale data.";
         case TMI_AUTHOR:return L"Local Usage Plugin";
-        case TMI_VERSION:return L"2.0.0";
+        case TMI_VERSION:return L"3.0.0";
         default:return L"";
         }
     }
@@ -58,30 +63,33 @@ public:
             CloseHandle(process); process=nullptr;
             if(job) { CloseHandle(job); job=nullptr; }
         }
-        const wchar_t* keys[]={L"minimax5h",L"minimaxWeek",L"codex5h",L"codexWeek",L"cursorPlan",L"claude5h",L"claudeWeek"};
-        const wchar_t* names[]={L"MiniMax 5h",L"MiniMax 周",L"Codex 5h",L"Codex 周",L"Cursor 月",L"Claude 5h",L"Claude 周"};
+        const wchar_t* keys[]={L"minimax5h",L"minimaxWeek",L"codex5h",L"codexWeek",L"cursorPlan",L"claude5h",L"claudeWeek",L"kimi5h",L"kimiWeek",L"antigravityPlan"};
+        const wchar_t* names[]={L"MiniMax 5h",L"MiniMax week",L"Codex 5h",L"Codex week",L"Cursor month",L"Claude 5h",L"Claude week",L"Kimi 5h",L"Kimi week/month",L"Antigravity lowest model"};
         FILETIME ft{};GetSystemTimeAsFileTime(&ft);
         ULARGE_INTEGER ticks{};ticks.LowPart=ft.dwLowDateTime;ticks.HighPart=ft.dwHighDateTime;
         const auto epoch=ticks.QuadPart/10000000ULL-11644473600ULL;
-        GroupedUsage::Window windows[7];
-        tooltip=L"上行 5h，下行周额度；Cursor 上行剩余、下行月重置。标签旁圆点 = 旧值；-- = 未知。\n";
-        for(int i=0;i<7;++i) {
+        GroupedUsage::Window windows[10];
+        tooltip=L"Top: short-period quota. Bottom: secondary quota and reset. Cursor/Antigravity: remaining quota and reset. A dot marks stale data; -- means unknown.\n";
+        for(int i=0;i<10;++i) {
             auto& window=windows[i];
             window.remaining=read(cache,keys[i],L"value",L"--");
-            window.status=read(cache,keys[i],L"status",L"等待首次查询");
+            window.status=read(cache,keys[i],L"status",L"Waiting for first query");
             window.updated=_wcstoui64(read(cache,keys[i],L"updated",L"0").c_str(),nullptr,10);
             window.reset=_wcstoui64(read(cache,keys[i],L"resetEpoch",L"0").c_str(),nullptr,10);
-            window.maxAge=i>=5?1500:600;
-            tooltip+=std::wstring(names[i])+L": "+GroupedUsage::Percent(window,epoch)+L"，重置剩余 "+
-                GroupedUsage::Reset(window,epoch,i==4)+L"  "+window.status+L"\n";
+            window.maxAge=i==5 || i==6?1500:600;
+            tooltip+=std::wstring(names[i])+L": "+GroupedUsage::Percent(window,epoch)+L", reset in "+
+                GroupedUsage::Reset(window,epoch,i==4 || i==9)+L"  "+window.status+L"\n";
         }
         items[0].resetAlert.Observe(windows[0].reset,epoch,now);
         items[1].resetAlert.Observe(windows[2].reset,epoch,now);
         items[3].resetAlert.Observe(windows[5].reset,epoch,now);
+        items[4].resetAlert.Observe(windows[7].reset,epoch,now);
         items[0].value=GroupedUsage::Summary(windows[0],windows[1],epoch);
         items[1].value=GroupedUsage::Summary(windows[2],windows[3],epoch);
         items[2].value=GroupedUsage::Percent(windows[4],epoch)+L","+GroupedUsage::Reset(windows[4],epoch,true);
         items[3].value=GroupedUsage::Summary(windows[5],windows[6],epoch);
+        items[4].value=GroupedUsage::Summary(windows[7],windows[8],epoch);
+        items[5].value=GroupedUsage::Percent(windows[9],epoch)+L","+GroupedUsage::Reset(windows[9],epoch,true);
         if(!process && now>=next && GetPrivateProfileIntW(L"settings",L"EnableQueries",1,(dir+L"\\AIUsage.ini").c_str()) && GetFileAttributesW((dir+L"\\AIUsage.Refresh.ps1").c_str())!=INVALID_FILE_ATTRIBUTES) {
             int seconds=GetPrivateProfileIntW(L"settings",L"RefreshSeconds",180,(dir+L"\\AIUsage.ini").c_str());
             next=now+static_cast<ULONGLONG>(std::clamp(seconds,60,3600))*1000;
@@ -96,26 +104,24 @@ public:
             if(CreateProcessW(exe.c_str(),cmd.data(),nullptr,nullptr,FALSE,CREATE_NO_WINDOW|CREATE_SUSPENDED,nullptr,dir.c_str(),&si,&pi)) {
                 if(!job || !AssignProcessToJobObject(job,pi.hProcess)) {
                     TerminateProcess(pi.hProcess,1);CloseHandle(pi.hProcess);CloseHandle(pi.hThread);
-                    if(job) {CloseHandle(job);job=nullptr;} tooltip+=L"无法建立后台查询进程组。\n";
+                    if(job) {CloseHandle(job);job=nullptr;} tooltip+=L"Cannot create the background query job.\n";
                 } else {process=pi.hProcess;ResumeThread(pi.hThread);CloseHandle(pi.hThread);started=now;}
-            } else tooltip+=L"无法启动后台查询脚本。\n";
+            } else tooltip+=L"Cannot start the background query script.\n";
         }
     }
     const wchar_t* GetTooltipInfo() override { return tooltip.c_str(); }
-    OptionReturn ShowOptionsDialog(void*) override {
-        ShellExecuteW(nullptr,L"open",(directory()+L"\\AIUsage.Setup.cmd").c_str(),nullptr,directory().c_str(),SW_SHOWNORMAL);
-        return OR_OPTION_UNCHANGED;
-    }
+    OptionReturn ShowOptionsDialog(void*) override { return OR_OPTION_NOT_PROVIDED; }
     int GetCommandCount() override { return 1; }
-    const wchar_t* GetCommandName(int) override { return L"刷新订阅额度"; }
+    const wchar_t* GetCommandName(int) override { return L"Refresh subscription usage"; }
     void OnPluginCommand(int,void*,void*) override { next=0; }
 };
 }
 ITMPlugin* Builtin::AIUsage() { static Plugin feature; return &feature; }
+void Builtin::RequestAIUsageRefresh() { static_cast<Plugin*>(AIUsage())->OnPluginCommand(0, nullptr, nullptr); }
 
 bool Builtin::IsAIResetHighlighted(const IPluginItem* item, unsigned long long tick) {
     auto feature=AIUsage();
-    for(int i=0;i<4;++i)
+    for(int i=0;i<6;++i)
         if(feature->GetItem(i)==item)
             return static_cast<const Item*>(item)->resetAlert.Highlight(tick);
     return false;

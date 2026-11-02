@@ -14,6 +14,8 @@ with tempfile.TemporaryDirectory() as folder:
     assert value(config,'task_bar','task_bar_text_color_item_ids').split(',')==NORMAL_IDS+['b5R30ITQ']
     assert int(value(config,'task_bar','tbar_display_item'))&96==96
     assert value(config,'task_bar','plugin_display_item').split(',').count('AIUsageCodexSummary')==1
+    assert 'AIUsageKimiSummary' in value(config,'task_bar','plugin_display_item').split(',')
+    assert 'AIUsageAntigravitySummary' in value(config,'task_bar','plugin_display_item').split(',')
     order=value(config,'task_bar','item_order').split(',')
     assert [CURRENT_IDS[int(x)] for x in order[:3]]==['cpu_temp_string','gpu_temp_string','b5R30ITQ']
     saved=p.read_bytes();migrate(p);assert p.read_bytes()==saved

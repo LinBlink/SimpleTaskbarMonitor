@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug (lite)|ARM64EC">
@@ -817,6 +817,7 @@
     <ClInclude Include="CommonData.h" />
     <ClInclude Include="DrawCommon.h" />
     <ClInclude Include="GeneralSettingsDlg.h" />
+    <ClInclude Include="AIUsageSettingsDlg.h" />
     <ClInclude Include="IconSelectDlg.h" />
     <ClInclude Include="IniHelper.h" />
     <ClInclude Include="ListCtrlEx.h" />
@@ -918,6 +919,7 @@
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="DrawCommon.cpp" />
     <ClCompile Include="GeneralSettingsDlg.cpp" />
+    <ClCompile Include="AIUsageSettingsDlg.cpp" />
     <ClCompile Include="IconSelectDlg.cpp" />
     <ClCompile Include="IniHelper.cpp" />
     <ClCompile Include="ListCtrlEx.cpp" />

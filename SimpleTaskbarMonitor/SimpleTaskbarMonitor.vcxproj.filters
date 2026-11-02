@@ -280,6 +280,9 @@
     <ClInclude Include="GeneralSettingsDlg.h">
       <Filter>源文件和头文件\对话框类\选项设置对话框</Filter>
     </ClInclude>
+    <ClInclude Include="AIUsageSettingsDlg.h">
+      <Filter>源文件和头文件\对话框类\选项设置对话框</Filter>
+    </ClInclude>
     <ClInclude Include="IconSelectDlg.h">
       <Filter>源文件和头文件\对话框类\IconSelectDlg</Filter>
     </ClInclude>
@@ -514,6 +517,9 @@
       <Filter>源文件和头文件\stdafx</Filter>
     </ClCompile>
     <ClCompile Include="GeneralSettingsDlg.cpp">
+      <Filter>源文件和头文件\对话框类\选项设置对话框</Filter>
+    </ClCompile>
+    <ClCompile Include="AIUsageSettingsDlg.cpp">
       <Filter>源文件和头文件\对话框类\选项设置对话框</Filter>
     </ClCompile>
     <ClCompile Include="TaskBarSettingsDlg.cpp">

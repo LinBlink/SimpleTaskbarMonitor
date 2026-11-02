@@ -9,6 +9,7 @@ u.FindWindowW.argtypes=[W.LPCWSTR,W.LPCWSTR]; u.FindWindowW.restype=W.HWND
 u.GetAncestor.argtypes=[W.HWND,W.UINT]; u.GetAncestor.restype=W.HWND
 u.SendMessageW.argtypes=[W.HWND,W.UINT,W.WPARAM,W.LPARAM]; u.SendMessageW.restype=C.c_ssize_t
 u.GetParent.argtypes=[W.HWND]; u.GetParent.restype=W.HWND
+u.GetDlgCtrlID.argtypes=[W.HWND]; u.GetDlgCtrlID.restype=C.c_int
 u.IsWindowVisible.argtypes=[W.HWND]
 u.GetWindowThreadProcessId.argtypes=[W.HWND,C.POINTER(W.DWORD)]
 u.GetClassNameW.argtypes=[W.HWND,W.LPWSTR,C.c_int]
@@ -25,6 +26,8 @@ def windows(pid):
         if owner.value==pid:
             cls=C.create_unicode_buffer(256); title=C.create_unicode_buffer(512)
             u.GetClassNameW(h,cls,256); u.GetWindowTextW(h,title,512)
+            if not title.value and cls.value in ('Edit','ComboBox'):
+                u.SendMessageW(h,0x000D,512,C.addressof(title))
             result.append((h,cls.value,title.value,bool(u.IsWindowVisible(h)),u.GetParent(h)))
         return True
     u.EnumChildWindows(u.GetDesktopWindow(),cb,0)
@@ -66,7 +69,8 @@ for mode in ['core','display']:
         display=next(x for x in found if x[2]=='SimpleTaskbarMonitorTaskbarWindow' and x[3])
         taskbar=u.GetAncestor(display[0],1)
         cls=C.create_unicode_buffer(256); u.GetClassNameW(taskbar,cls,256)
-        assert cls.value in ('Shell_TrayWnd','Shell_SecondaryTrayWnd'), ('Display did not embed in the taskbar',found)
+        expected_parents=('Shell_TrayWnd','Shell_SecondaryTrayWnd') if u.FindWindowW('Shell_TrayWnd',None) else ('#32769',)
+        assert cls.value in expected_parents, ('Display did not embed in the taskbar',cls.value,found)
         # Exercise the same options command used by the taskbar menu.
         if mode=='core':
             u.PostMessageW(core[0],0x111,option_id,0)
@@ -77,11 +81,45 @@ for mode in ['core','display']:
                 if opts or time.monotonic()>deadline or p.poll() is not None: break
                 time.sleep(.2)
             assert not any(x[2]=='Microsoft Visual C++ Runtime Library' for x in windows(p.pid)), 'Runtime assertion dialog appeared'
-            assert opts, 'Options must open from taskbar command'
+            assert opts, ('Options must open from taskbar command',found,windows(p.pid))
             tabs=[x for x in windows(p.pid) if x[1]=='SysTabControl32']
             assert len(tabs)==1, tabs
-            assert u.SendMessageW(tabs[0][0],0x1304,0,0)==2, 'Expected exactly two options tabs'
+            assert u.SendMessageW(tabs[0][0],0x1304,0,0)==3, 'Expected exactly three options tabs'
             assert u.SendMessageW(tabs[0][0],0x130B,0,0)==0, 'Taskbar settings must be selected'
+            u.PostMessageW(opts[0],0x111,2,0)
+            deadline=time.monotonic()+5
+            while any(x[1]=='SysTabControl32' for x in windows(p.pid)):
+                assert time.monotonic()<deadline, 'Initial options did not close'
+                time.sleep(.1)
+            ai_option_id=int(re.search(r'#define ID_AI_USAGE_OPTIONS\s+(\d+)',header)[1])
+            u.PostMessageW(core[0],0x111,ai_option_id,0)
+            deadline=time.monotonic()+15
+            while True:
+                tabs=[x for x in windows(p.pid) if x[1]=='SysTabControl32']
+                if tabs and u.IsWindowVisible(u.GetParent(tabs[0][0])) and u.SendMessageW(tabs[0][0],0x130B,0,0)==2: break
+                assert time.monotonic()<deadline and p.poll() is None, 'AI Usage options did not open'
+                time.sleep(.2)
+            opts=[u.GetParent(x[0]) for x in tabs]
+            refresh_id=int(re.search(r'#define IDC_AI_USAGE_REFRESH_EDIT\s+(\d+)',header)[1])
+            kimi_id=int(re.search(r'#define IDC_AI_USAGE_KIMI_CHECK\s+(\d+)',header)[1])
+            antigravity_id=int(re.search(r'#define IDC_AI_USAGE_ANTIGRAVITY_CHECK\s+(\d+)',header)[1])
+            deadline=time.monotonic()+10
+            while True:
+                all_windows=windows(p.pid)
+                pages=[h for h,cls,text,visible,parent in all_windows if cls=='#32770' and visible and parent==tabs[0][0]]
+                if pages: break
+                assert time.monotonic()<deadline and p.poll() is None, f'Options page did not become visible: {all_windows}'
+                time.sleep(.1)
+            page=pages[0]
+            controls={u.GetDlgCtrlID(h):text for h,cls,text,visible,parent in all_windows if parent==page}
+            assert controls.get(refresh_id)=='180', controls
+            assert controls.get(kimi_id)=='Kimi' and controls.get(antigravity_id)=='Google Antigravity', controls
+            apply_id=int(re.search(r'#define IDC_APPLY_BUTTON\s+(\d+)',header)[1])
+            u.PostMessageW(opts[0],0x111,apply_id,0);time.sleep(.5)
+            settings=(program/'plugins/AIUsage.ini').read_text(encoding='utf-8',errors='ignore')
+            assert 'EnableKimi=1' in settings and 'EnableAntigravity=1' in settings, settings
+            u.SendMessageW(tabs[0][0],0x1330,0,0)
+            u.SendMessageW(tabs[0][0],0x130C,0,0)
             u.PostMessageW(opts[0],0x111,2,0); time.sleep(.5)
             feature_id=int(re.search(r'#define ID_PLUGIN_MANAGE\s+(\d+)',header)[1])
             refresh_id=int(re.search(r'#define ID_REFRESH_CONNECTION_LIST\s+(\d+)',header)[1])

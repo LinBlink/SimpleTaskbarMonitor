@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference='Stop'
+$ErrorActionPreference='Stop'
 . "$PSScriptRoot/../helpers/AIUsage/AIUsage.Refresh.ps1" -LibraryOnly
 function Assert($condition,$message) { if (!$condition) { throw $message } }
 $data = '{"rateLimits":{"primary":{"usedPercent":25,"windowDurationMins":300,"resetsAt":1780000000},"secondary":{"usedPercent":5,"windowDurationMins":10080}}}' | ConvertFrom-Json
@@ -67,3 +67,25 @@ $failed=$false
 try { Parse-Claude ('{"error":{"type":"authentication_error"}}'|ConvertFrom-Json) } catch { $failed=$true }
 Assert $failed 'Claude error response is not full quota'
 Write-Host 'PASS: Claude percentages, reset timestamps, missing quota and error responses.'
+$kimi='{"usage":{"limit":"100","used":"26","remaining":"74","resetTime":"2026-11-09T12:00:00Z"},"limits":[{"duration":300,"detail":{"limit":"100","used":"25","remaining":"75","resetTime":1793913600000}}]}'|ConvertFrom-Json
+$r=Parse-Kimi $kimi
+Assert ($r.kimi5h.value -eq '75%' -and $r.kimiWeek.value -eq '74%') 'Kimi remaining values'
+Assert ($r.kimi5h.resetEpoch -eq 1793913600 -and $r.kimiWeek.resetEpoch -eq [DateTimeOffset]::Parse('2026-11-09T12:00:00Z').ToUnixTimeSeconds()) 'Kimi reset timestamps'
+$kimi='{"usages":{"limit_5h":{"used_ratio":0.25,"reset_time":1793913600},"limit_month_total":{"used_ratio":0.4,"reset_time":1796515200}}}'|ConvertFrom-Json
+$r=Parse-Kimi $kimi
+Assert ($r.kimi5h.value -eq '75%' -and $r.kimiWeek.value -eq '60%') 'Kimi ratio response and monthly fallback'
+$kimi.usages.limit_5h.used_ratio=1
+$r=Parse-Kimi $kimi
+Assert ($r.kimi5h.value -eq '0%') 'Kimi exhausted quota is valid'
+Write-Host 'PASS: Kimi legacy/ratio responses, remaining quota, monthly fallback and reset times.'
+$antigravity='{"available_models":{"response":{"clientModelConfigs":[{"label":"Gemini","quotaInfo":{"remainingFraction":0.8,"resetTime":"2026-11-03T12:00:00Z"}},{"label":"Claude","quotaInfo":{"remainingFraction":0.2,"resetTime":"2026-11-04T12:00:00Z"}}]}}}'|ConvertFrom-Json
+$r=Parse-Antigravity $antigravity
+Assert ($r.antigravityPlan.value -eq '20%') 'Antigravity exposes the most constrained model'
+Assert ($r.antigravityPlan.resetEpoch -eq [DateTimeOffset]::Parse('2026-11-04T12:00:00Z').ToUnixTimeSeconds()) 'Antigravity matching reset time'
+$antigravity.available_models.response.clientModelConfigs[1].quotaInfo.remainingFraction=0
+$r=Parse-Antigravity $antigravity
+Assert ($r.antigravityPlan.value -eq '0%') 'Antigravity exhausted quota is valid'
+$failed=$false
+try { Parse-Antigravity ('{"available_models":{"response":{"clientModelConfigs":[]}}}'|ConvertFrom-Json) } catch { $failed=$true }
+Assert $failed 'Antigravity missing model quota is not full quota'
+Write-Host 'PASS: Antigravity minimum model quota, reset times, exhausted and missing quota.'

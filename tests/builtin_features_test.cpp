@@ -14,6 +14,8 @@ int main() {
     auto layout=AIUsageLayout::MeasureColumns(4,measure,2);
     assert(AIUsageLayout::ColumnCount(L"AIUsageCodexSummary")==4);
     assert(AIUsageLayout::ColumnCount(L"AIUsageCursorSummary")==2);
+    assert(AIUsageLayout::ColumnCount(L"AIUsageAntigravitySummary")==2);
+    assert(AIUsageLayout::ColumnCount(L"AIUsageKimiSummary")==4);
     assert(AIUsageLayout::ColumnCount(L"BatteryPowerMon")==0);
     assert(layout.columns[0].left==layout.columns[2].left);
     assert(layout.columns[1].left==layout.columns[3].left);
@@ -69,7 +71,7 @@ int main() {
     assert(!Builtin::IsAIResetHighlighted(nullptr,GetTickCount64()));
     assert(!Builtin::IsAIResetHighlighted(Builtin::Power()->GetItem(0),GetTickCount64()));
     assert(Builtin::AIUsage()->GetItem(1)->IsDoubleLineExclusive());
-    assert(ids.size()==11);assert(ids.count(L"AIUsageCodexSummary"));assert(ids.count(L"CustomDualCountdown"));assert(ids.count(L"b5R30ITQ"));assert(ids.count(L"BatteryPowerMon"));
+    assert(ids.size()==13);assert(ids.count(L"AIUsageCodexSummary"));assert(ids.count(L"AIUsageKimiSummary"));assert(ids.count(L"AIUsageAntigravitySummary"));assert(ids.count(L"CustomDualCountdown"));assert(ids.count(L"b5R30ITQ"));assert(ids.count(L"BatteryPowerMon"));
     for(auto feature:features) feature->DataRequired();
     assert(std::wstring(Builtin::AIUsage()->GetItem(1)->GetItemValueText())==L"0%,--,--,--");
     WritePrivateProfileStringW(L"codex5h",L"status",L"network unavailable",cache.c_str());
@@ -106,5 +108,5 @@ int main() {
     assert(Builtin::Measurement(NAN,L"W")==L"--");assert(Builtin::Measurement(-12.5,L"W")==L"-12.5W");assert(Builtin::Measurement(0,L"W")==L"0.0W");
     // Read-only probe of Windows battery APIs; unsupported values must stay unknown.
     Builtin::SampleHardware();Builtin::Battery()->DataRequired();Builtin::Power()->DataRequired();
-    std::cout<<"PASS: 4 native features, 11 items, grouped quota/reset format, stale/zero AI quota, calendar boundaries, unknown battery/power\n";
+    std::cout<<"PASS: 4 native features, 13 items, grouped quota/reset format, stale/zero AI quota, calendar boundaries, unknown battery/power\n";
 }
