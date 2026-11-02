@@ -71,55 +71,10 @@ void CStrTable::Init()
     CIniHelper ini_default(IDR_LANGUAGE_DEFAULT);
     ReadStringtableFronIni(ini_default);
 
-    //读取字符串资源
+    //读取字符串资源（仅内置英文）
     CIniHelper ini(IDR_LANGUAGE);
     ReadStringtableFronIni(ini);
     LanguageInfoFromIni(m_language_info, ini);
-
-    //获取当前系统默认语言
-    DWORD cur_system_language_id = GetUserDefaultUILanguage();
-
-    //从外部language文件夹获取语言文件
-    vector<wstring> files;
-    std::wstring language_dir;
-#ifdef _DEBUG
-    language_dir = L".\\language";
-#else
-    language_dir = theApp.m_module_dir + L"language";
-#endif
-    CCommon::GetFiles((language_dir + L"\\*.ini").c_str(), files);
-    for (const wstring& file_name : files)
-    {
-        std::wstring file_path{ language_dir + file_name };
-        CIniHelper ini_file(file_path, true);
-        LanguageInfo language_info;
-        LanguageInfoFromIni(language_info, ini_file);
-        language_info.language_id = LocaleNameToLCID(language_info.bcp_47.c_str(), 0);  //根据语言bcp-47代码获取语言id
-        //从外部语言文件读取到当前语言，先从外部语言文件加载
-        bool is_current_language = false;
-        LanguageInfo settings_language = theApp.m_general_data.language;
-        //如果设置中的语言为空，即选择了“跟随系统”，则根据当前系统语言查找
-        if (settings_language.isEmpty())
-        {
-            if (cur_system_language_id == language_info.language_id)
-                is_current_language = true;
-        }
-        else
-        {
-            if (language_info == settings_language)
-                is_current_language = true;
-        }
-        if (is_current_language)
-        {
-            m_language_info = language_info;
-            ReadStringtableFronIni(ini_file);
-        }
-
-        //如果语言不在m_language_list，添加到该列表
-        auto iter = std::find(m_language_list.begin(), m_language_list.end(), language_info);
-        if (iter == m_language_list.end())
-            m_language_list.push_back(language_info);
-    }
 }
 
 const wstring& CStrTable::LoadText(const wstring& key) const

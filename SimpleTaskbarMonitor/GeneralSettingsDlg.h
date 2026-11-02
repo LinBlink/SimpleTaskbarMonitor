@@ -40,7 +40,6 @@ protected:
     CSpinEdit m_traffic_tip_edit;
     CComboBox2 m_traffic_tip_combo;
     CSpinEdit m_memory_tip_edit;
-    CComboBox2 m_language_combo;
     CToolTipCtrl m_toolTip;
     CSpinEdit m_monitor_span_edit;
     CSpinEdit m_cpu_temp_tip_edit;

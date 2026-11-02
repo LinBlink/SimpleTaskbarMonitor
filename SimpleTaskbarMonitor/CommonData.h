@@ -275,9 +275,6 @@ struct GeneralSettingData
     NotifyTipSettings mainboard_temp_tip;   //主板温度超出提示
 
 
-    //语言
-    LanguageInfo language;
-
     bool show_all_interface{ true };
 
     //CPU利用率获取方式

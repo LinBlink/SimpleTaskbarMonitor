@@ -47,7 +47,6 @@ void CGeneralSettingsDlg::CheckTaskbarDisplayItem()
 void CGeneralSettingsDlg::SetControlMouseWheelEnable(bool enable)
 {
     m_traffic_tip_combo.SetMouseWheelEnable(enable);
-    m_language_combo.SetMouseWheelEnable(enable);
     m_traffic_tip_edit.SetMouseWheelEnable(enable);
     m_memory_tip_edit.SetMouseWheelEnable(enable);
     m_monitor_span_edit.SetMouseWheelEnable(enable);
@@ -72,10 +71,6 @@ bool CGeneralSettingsDlg::InitializeControls()
         { CtrlTextInfo::L4, IDC_RESET_AUTO_RUN_BUTTON, CtrlTextInfo::W16 }
         });
 
-    RepositionTextBasedControls({
-        { CtrlTextInfo::L4, IDC_LANGUAGE_STATIC },
-        { CtrlTextInfo::L3, IDC_LANGUAGE_COMBO }
-        });
 
     //调整“今日使用流量已达到”这一行控件的水平位置
     RepositionTextBasedControls({
@@ -177,7 +172,6 @@ void CGeneralSettingsDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_TODAY_TRAFFIC_TIP_EDIT, m_traffic_tip_edit);
     DDX_Control(pDX, IDC_TODAY_TRAFFIC_TIP_COMBO, m_traffic_tip_combo);
     DDX_Control(pDX, IDC_MEMORY_USAGE_TIP_EDIT, m_memory_tip_edit);
-    DDX_Control(pDX, IDC_LANGUAGE_COMBO, m_language_combo);
     DDX_Control(pDX, IDC_MONITOR_SPAN_EDIT, m_monitor_span_edit);
     DDX_Control(pDX, IDC_CPU_TEMP_TIP_EDIT, m_cpu_temp_tip_edit);
     DDX_Control(pDX, IDC_GPU_TEMP_TIP_EDIT, m_gpu_temp_tip_edit);
@@ -338,17 +332,6 @@ BOOL CGeneralSettingsDlg::OnInitDialog()
 
     SetControlEnable();
 
-    m_language_combo.AddString(CCommon::LoadText(IDS_FOLLOWING_SYSTEM));
-    int current_language_index{ -1 };       //当前语言在所有语言列表中的序号
-    for (size_t i = 0; i < theApp.m_str_table.GetLanguageList().size(); i++)
-    {
-        const LanguageInfo& language_info = theApp.m_str_table.GetLanguageList()[i];
-        m_language_combo.AddString(language_info.display_name.c_str());
-        if (language_info == m_data.language)
-            current_language_index = static_cast<int>(i);
-    }
-    m_language_combo.SetCurSel(current_language_index + 1);     //由于ComboBox第一项是“跟随系统”，因此ComboBox的序号需要加1
-
     ((CButton*)GetDlgItem(IDC_SHOW_ALL_CONNECTION_CHECK))->SetCheck(m_data.show_all_interface);
 
     m_toolTip.Create(this);
@@ -490,21 +473,6 @@ void CGeneralSettingsDlg::OnOK()
     m_data.mainboard_temp_tip.tip_value = m_mbd_temp_tip_edit.GetValue();
     checkTempTipValue(m_data.mainboard_temp_tip.tip_value);
 
-    //获取语言的设置
-    m_data.language = LanguageInfo();
-    if (m_language_combo.GetCurSel() > 0)
-    {
-        //选择的不是“跟随系统”
-        int current_language_index = m_language_combo.GetCurSel() - 1;
-        if (current_language_index >= 0 && current_language_index < static_cast<int>(theApp.m_str_table.GetLanguageList().size()))
-        {
-            m_data.language = theApp.m_str_table.GetLanguageList()[current_language_index];
-        }
-    }
-    if (m_data.language != theApp.m_general_data.language)
-    {
-        MessageBox(CCommon::LoadText(IDS_LANGUAGE_CHANGE_INFO), NULL, MB_ICONINFORMATION | MB_OK);
-    }
     m_show_all_interface_modified = (m_data.show_all_interface != theApp.m_general_data.show_all_interface);
 
     m_data.portable_mode = true;

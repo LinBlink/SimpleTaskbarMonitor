@@ -54,11 +54,6 @@ CTrafficMonitorApp::CTrafficMonitorApp()
     m_theme_color = CCommon::GetWindowsThemeColor();
 }
 
-void CTrafficMonitorApp::LoadLanguageConfig()
-{
-    CIniHelper ini{ m_config_path };
-    m_general_data.language.fromConfigString(ini.GetString(_T("general"), _T("language"), L""));
-}
 
 void CTrafficMonitorApp::LoadConfig()
 {
@@ -244,7 +239,6 @@ void CTrafficMonitorApp::SaveConfig()
     CSettingsHelper ini;
 
     //常规设置
-    ini.WriteString(_T("general"), _T("language"), m_general_data.language.toConfigString());
     ini.WriteBool(L"general", L"show_all_interface", m_general_data.show_all_interface);
     ini.WriteInt(L"general", L"cpu_usage_acquire_method", m_general_data.cpu_usage_acquire_method);
     ini.WriteInt(L"general", L"monitor_time_span", m_general_data.monitor_time_span);
@@ -692,10 +686,8 @@ BOOL CTrafficMonitorApp::InitInstance()
     m_config_path = m_config_dir + L"config.ini";
     m_log_path = m_config_dir + L"error.log";
 
-    LoadLanguageConfig();
-
-    //初始化界面语言
-    CCommon::SetThreadLanguage(m_general_data.language.language_id);
+    //界面语言固定为英文
+    CCommon::SetThreadLanguage(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
 
     //初始化字符串资源
     m_str_table.Init();
@@ -1143,7 +1135,7 @@ void CTrafficMonitorApp::ShowNotifyMessage(const wchar_t* strMsg)
 
 unsigned short CTrafficMonitorApp::GetLanguageId() const
 {
-    return m_general_data.language.language_id;
+    return MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
 }
 
 const wchar_t* CTrafficMonitorApp::GetPluginConfigDir() const
