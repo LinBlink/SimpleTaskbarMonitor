@@ -1,4 +1,4 @@
-﻿
+
 // TrafficMonitor.cpp : 定义应用程序的类行为。
 //
 
@@ -1042,53 +1042,21 @@ void CTrafficMonitorApp::SetThemeColor(COLORREF color)
 void CTrafficMonitorApp::OnHelp()
 {
     // TODO: 在此添加命令处理程序代码
-    CString help_url;
-    if (m_str_table.IsSimplifiedChinese())
-        help_url = _T("https://github.com/zhongyang219/TrafficMonitor/wiki");
-    else
-        help_url = _T("https://github.com/zhongyang219/TrafficMonitor/wiki/Home_en");
-    ShellExecute(NULL, _T("open"), help_url, NULL, NULL, SW_SHOW);
+    ShellExecute(NULL, _T("open"), _T("https://github.com/LinBlink/SimpleTaskbarMonitor/blob/master/README.md"), NULL, NULL, SW_SHOW);
 }
 
 
 void CTrafficMonitorApp::OnFrequentyAskedQuestions()
 {
     // TODO: 在此添加命令处理程序代码
-    CString url_domain;
-    if (m_str_table.IsSimplifiedChinese())
-        url_domain = _T("gitee.com");
-    else
-        url_domain = _T("github.com");
-    CString file_name;
-    if (m_str_table.IsSimplifiedChinese())
-        file_name = _T("Help.md");
-    else
-        file_name = _T("Help_en-us.md");
-    CString url;
-    url.Format(_T("https://%s/zhongyang219/TrafficMonitor/blob/master/%s"), url_domain.GetString(), file_name.GetString());
-    ShellExecute(NULL, _T("open"), url, NULL, NULL, SW_SHOW);
+    ShellExecute(NULL, _T("open"), _T("https://github.com/LinBlink/SimpleTaskbarMonitor/blob/master/README.md"), NULL, NULL, SW_SHOW);
 }
 
 
 void CTrafficMonitorApp::OnUpdateLog()
 {
     // TODO: 在此添加命令处理程序代码
-    CString url_domain;
-    if (m_str_table.IsSimplifiedChinese())
-        url_domain = _T("gitee.com");
-    else
-        url_domain = _T("github.com");
-    wstring language_tag = m_str_table.GetLanguageInfo().bcp_47;
-    CString file_name;
-    if (language_tag == L"zh-CN")
-        file_name = _T("update_log.md");
-    else if (language_tag == L"zh-TW")
-        file_name = _T("update_log_zh-tw.md");
-    else
-        file_name = _T("update_log_en-us.md");
-    CString url;
-    url.Format(_T("https://%s/zhongyang219/TrafficMonitor/blob/master/UpdateLog/%s"), url_domain.GetString(), file_name.GetString());
-    ShellExecute(NULL, _T("open"), url, NULL, NULL, SW_SHOW);
+    ShellExecute(NULL, _T("open"), _T("https://github.com/LinBlink/SimpleTaskbarMonitor/commits/master"), NULL, NULL, SW_SHOW);
 }
 
 
