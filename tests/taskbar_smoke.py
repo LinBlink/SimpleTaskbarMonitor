@@ -52,7 +52,7 @@ appdata_before=hashlib.sha256(appdata.read_bytes()).digest() if appdata.exists()
 for mode in ['core','display']:
     legacy='show_task_bar_wnd=false\n' if mode=='display' else ''
     (program/'global_cfg.ini').write_text('[config]\nportable_mode=false\n')
-    (program/'config.ini').write_text('[config]\n'+legacy+'show_notify_icon=true\n[task_bar]\ntask_bar_text_color=123,456,987,654\ntask_bar_text_color_item_ids=AIUsageCodex5h,cpu_temp_string\nspecify_each_item_color=true\n[other]\nno_multistart_warning=true\n',encoding='utf-8')
+    (program/'config.ini').write_text('[general]\ncpu_core_name=平均温度\n[config]\n'+legacy+'show_notify_icon=true\n[task_bar]\ntask_bar_text_color=123,456,987,654\ntask_bar_text_color_item_ids=AIUsageCodex5h,cpu_temp_string\nspecify_each_item_color=true\n[other]\nno_multistart_warning=true\n',encoding='utf-8')
     p=subprocess.Popen([str(exe)],cwd=cwd)
     try:
         time.sleep(5)
@@ -102,6 +102,7 @@ for mode in ['core','display']:
         assert code==0, f'Exit failed: {code}'
         assert not windows(p.pid), 'Windows remained after exit'
         config=(program/'config.ini').read_text(encoding='utf-8-sig')
+        assert re.search(r'^cpu_core_name\s*=\s*Core Average\s*$',config,re.M), 'Legacy CPU average label must normalize to the sensor name'
         assert 'task_bar_text_color_item_ids' in config, 'Colors must be saved with stable item IDs'
         ids=re.search(r'^task_bar_text_color_item_ids\s*=\s*"?([^"\r\n]+)',config,re.M)[1].split(',')
         numbers=re.search(r'^task_bar_text_color\s*=\s*([^\r\n]+)',config,re.M)[1].rstrip(',').split(',')

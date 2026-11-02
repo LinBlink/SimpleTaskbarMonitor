@@ -879,7 +879,7 @@ void CTaskbarCore::DoMonitorAcquisition()
         //获取CPU温度
         if (!theApp.m_pMonitor->AllCpuTemperature().empty())
         {
-            if (theApp.m_general_data.cpu_core_name == CCommon::LoadText(IDS_AVREAGE_TEMPERATURE).GetString())  //如果选择了平均温度
+            if (theApp.m_general_data.cpu_core_name == L"Core Average")  //如果选择了平均温度
             {
                 theApp.m_cpu_temperature = theApp.m_pMonitor->CpuTemperature();
             }

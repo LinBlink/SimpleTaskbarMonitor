@@ -1,4 +1,4 @@
-
+﻿
 // TrafficMonitor.cpp : 定义应用程序的类行为。
 //
 
@@ -67,6 +67,8 @@ void CTrafficMonitorApp::LoadConfig()
         m_general_data.monitor_time_span = 1000;
     m_general_data.hard_disk_name = ini.GetString(L"general", L"hard_disk_name", L"");
     m_general_data.cpu_core_name = ini.GetString(L"general", L"cpu_core_name", L"Core Average");
+    if (m_general_data.cpu_core_name.empty() || m_general_data.cpu_core_name == L"平均温度" || m_general_data.cpu_core_name == L"Average Temperature")
+        m_general_data.cpu_core_name = L"Core Average";
     m_general_data.hardware_monitor_item = ini.GetInt(L"general", L"hardware_monitor_item", 0);
     std::vector<std::wstring> connections_hide;
     ini.GetStringList(L"general", L"connections_hide", connections_hide, std::vector<std::wstring>{});

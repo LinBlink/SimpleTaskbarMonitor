@@ -385,7 +385,9 @@ BOOL CGeneralSettingsDlg::OnInitDialog()
         m_select_cpu_combo.AddString(CCommon::LoadText(IDS_AVREAGE_TEMPERATURE));
         for (const auto& cpu_item : theApp.m_pMonitor->AllCpuTemperature())
             m_select_cpu_combo.AddString(cpu_item.first.c_str());
-        int cur_index = m_select_cpu_combo.FindString(-1, m_data.cpu_core_name.c_str());
+        int cur_index = 0;
+        if (!m_data.cpu_core_name.empty() && m_data.cpu_core_name != L"平均温度" && m_data.cpu_core_name != L"Average Temperature")
+            cur_index = m_select_cpu_combo.FindString(-1, m_data.cpu_core_name.c_str());
         if (cur_index < 0)
             cur_index = 0;
         m_select_cpu_combo.SetCurSel(cur_index);
@@ -703,7 +705,11 @@ void CGeneralSettingsDlg::OnBnClickedMbdCheck()
 
 void CGeneralSettingsDlg::OnCbnSelchangeSelectCpuCombo()
 {
-    // TODO: 在此添加控件通知处理程序代码
+    if (m_select_cpu_combo.GetCurSel() == 0)
+    {
+        m_data.cpu_core_name = L"Core Average";
+        return;
+    }
     CString cpu_core_name;
     m_select_cpu_combo.GetWindowText(cpu_core_name);
     m_data.cpu_core_name = cpu_core_name.GetString();
