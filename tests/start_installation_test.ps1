@@ -7,7 +7,7 @@ function Start-Process {param($FilePath,$WorkingDirectory,$WindowStyle) $script:
 function Task($path,$level='Highest',$arguments='') {
     return [pscustomobject]@{TaskPath='\TrafficMonitor\';TaskName=$path;State='Ready';Principal=[pscustomobject]@{RunLevel=$level};Actions=@([pscustomobject]@{Execute=$path;Arguments=$arguments})}
 }
-$binary='C:\_FLEX\TrafficMonitor\SimpleTaskbarMonitor.exe'
+$binary=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\run\SimpleTaskbarMonitor.exe'))
 $script:tasks=@((Task 'C:\other\SimpleTaskbarMonitor.exe'),(Task $binary 'Limited'))
 Start-SimpleTaskbarInstallation -Executable $binary
 if($script:startedTask -or $script:startedProcess[2] -ne 'Hidden') {throw 'Fallback must remain hidden and ignore other installations/limited tasks'}

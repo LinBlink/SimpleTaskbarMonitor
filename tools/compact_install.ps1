@@ -1,4 +1,4 @@
-param([string]$Destination='C:\_FLEX\TrafficMonitor',[string]$ArchiveRoot)
+param([string]$Destination=(Join-Path $PSScriptRoot '..\run'),[string]$ArchiveRoot)
 $ErrorActionPreference='Stop'
 $target=[IO.Path]::GetFullPath($Destination).TrimEnd('\')
 if (!(Test-Path -LiteralPath (Join-Path $target 'SimpleTaskbarMonitor.exe')) -or !(Test-Path -LiteralPath (Join-Path $target '.deployment.json'))) {throw 'Expected a source-deployed installation.'}

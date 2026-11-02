@@ -1,4 +1,4 @@
-param([string]$Destination='C:\_FLEX\TrafficMonitor',[switch]$SkipBuild,[switch]$NoStart)
+param([string]$Destination=(Join-Path $PSScriptRoot 'run'),[switch]$SkipBuild,[switch]$NoStart)
 $ErrorActionPreference='Stop'
 $root=$PSScriptRoot
 if (!$SkipBuild) { & (Join-Path $root 'build.ps1') }
@@ -42,7 +42,7 @@ public static class TaskbarDeploymentWindow {
 }
 $binary=Join-Path $destinationPath 'SimpleTaskbarMonitor.exe'
 $legacyBinary=Join-Path $destinationPath 'TrafficMonitor.exe'
-$running=@(Get-Process -ErrorAction SilentlyContinue | Where-Object {$_.Path -eq $binary -or $_.Path -eq $legacyBinary})
+$running=@(Get-Process -Name 'SimpleTaskbarMonitor','TrafficMonitor' -ErrorAction SilentlyContinue)
 foreach($instance in $running) {
     [TaskbarDeploymentWindow]::CloseCore($instance.Id)
     if(!$instance.WaitForExit(12000)) {throw 'Installed instance did not close; deployment stopped before replacement.'}
@@ -60,17 +60,18 @@ if(Test-Path -LiteralPath $programConfig) {
 }
 Copy-Item -LiteralPath (Join-Path $built 'SimpleTaskbarMonitor.exe') -Destination $binary -Force
 if(Test-Path -LiteralPath $legacyBinary) {Remove-Item -LiteralPath $legacyBinary -Force}
-# Keep the existing elevated autorun tasks pointing at the renamed executable.
+# Keep the existing elevated autorun tasks pointing at the deployed executable.
 foreach($task in @(Get-ScheduledTask -TaskPath '\TrafficMonitor\' -ErrorAction SilentlyContinue)) {
     foreach($action in @($task.Actions)) {
         try {$actionPath=[IO.Path]::GetFullPath([Environment]::ExpandEnvironmentVariables($action.Execute.Trim('"')))} catch {continue}
-        if(![string]::Equals($actionPath,$legacyBinary,[StringComparison]::OrdinalIgnoreCase)) {continue}
+        if([string]::Equals($actionPath,$binary,[StringComparison]::OrdinalIgnoreCase)) {continue}
+        if([IO.Path]::GetFileName($actionPath) -notin @('SimpleTaskbarMonitor.exe','TrafficMonitor.exe')) {continue}
         $action.Execute=$binary
         try {
             $task | Set-ScheduledTask -ErrorAction Stop | Out-Null
             Write-Host "Updated scheduled task action: $($task.TaskPath)$($task.TaskName) -> $binary"
         } catch {
-            throw "Could not update scheduled task '$($task.TaskPath)$($task.TaskName)' to the renamed executable. Open Task Scheduler and point its action at $binary, then redeploy."
+            throw "Could not update scheduled task '$($task.TaskPath)$($task.TaskName)' to the deployed executable. Open Task Scheduler and point its action at $binary, then redeploy."
         }
     }
 }

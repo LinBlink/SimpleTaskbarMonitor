@@ -302,3 +302,7 @@ __pycache__/
 !/SimpleTaskbarMonitor/language/*.ini
 *.diagsession
 enc_temp*
+
+# Local runtime, configuration, credentials, caches, and deployment backups
+/run/
+/run-archive/
