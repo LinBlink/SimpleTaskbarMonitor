@@ -21,6 +21,8 @@
 
 所有构建（包括 Debug）固定读写 `TrafficMonitor.exe` 同目录的 `config.ini` 和 `global_cfg.ini`。工作目录、AppData、旧 `portable_mode=false` 设置都不能改变这个位置。配置目录不可写时不会回退到其他目录。
 
+`install/config.ini` 和 `install/global_cfg.ini` 是默认配置，与 `C:\_FLEX\TrafficMonitor` 当前生效配置保持一致。部署时若目标目录缺少对应配置文件，会从 `install/` 复制一份作为起点；已有配置绝不被覆盖。
+
 文本颜色仍使用原有 `task_bar_text_color`、预设 `defaultN_text_color` 数值，新增对应的 `_item_ids` 元数据。增删、重排温度或 AI 项目后按 ID 对齐颜色，避免按序号读错。部署前自动备份程序目录配置；对旧配置做一次颜色及顺序迁移，并保留当前勾选的 AI/倒数日项目。
 
 ## Lite 中的温度采集

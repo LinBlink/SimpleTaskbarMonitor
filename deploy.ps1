@@ -1,4 +1,4 @@
-﻿param([string]$Destination='C:\_FLEX\TrafficMonitor',[switch]$SkipBuild,[switch]$NoStart)
+param([string]$Destination='C:\_FLEX\TrafficMonitor',[switch]$SkipBuild,[switch]$NoStart)
 $ErrorActionPreference='Stop'
 $root=$PSScriptRoot
 if (!$SkipBuild) { & (Join-Path $root 'build.ps1') }
@@ -13,6 +13,12 @@ if (!$backup.StartsWith($backupRoot+'\',[StringComparison]::OrdinalIgnoreCase)) 
 New-Item -ItemType Directory -Path $backup -Force | Out-Null
 $programConfig=Join-Path $destinationPath 'config.ini'
 $globalConfig=Join-Path $destinationPath 'global_cfg.ini'
+foreach($seed in @(@('install\config.ini',$programConfig),@('install\global_cfg.ini',$globalConfig))) {
+    if (!(Test-Path -LiteralPath $seed[1])) {
+        Copy-Item -LiteralPath (Join-Path $root $seed[0]) -Destination $seed[1]
+        Write-Host "Seeded default configuration: $($seed[1])"
+    }
+}
 $selection=$null
 # One-time, read-only import from the previous installation; runtime never reads AppData.
 if ((Test-Path -LiteralPath $globalConfig) -and ((Get-Content -LiteralPath $globalConfig -Raw) -match 'portable_mode\s*=\s*false')) {
