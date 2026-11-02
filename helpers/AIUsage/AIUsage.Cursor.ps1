@@ -1,25 +1,50 @@
 function Parse-Cursor($response) {
     $plan=$response.individualUsage.plan
+    if($null -eq $plan) { $plan=$response.planUsage }
+    if($null -eq $plan -and $response.usage) { $plan=$response.usage.planUsage }
     if($null -eq $plan -or $plan.enabled -eq $false) { throw 'Cursor included plan quota unavailable' }
     $reset=0
-    if($response.billingCycleEnd) {
-        try { $reset=[DateTimeOffset]::Parse($response.billingCycleEnd,[cultureinfo]::InvariantCulture).ToUnixTimeSeconds() }
-        catch { throw 'Invalid Cursor billing reset time' }
+    $rawEnd=$response.billingCycleEnd
+    if(!$rawEnd -and $response.usage) { $rawEnd=$response.usage.billingCycleEnd }
+    if($rawEnd) {
+        $reset=Reset-Epoch $rawEnd
+        if($reset -le 0) { throw 'Invalid Cursor billing reset time' }
     }
     $out=@{}
     if($null -ne $plan.totalPercentUsed) { $out.cursorPlan=Window (100-[double]$plan.totalPercentUsed) $reset }
     # Old accounts may expose a numeric included budget without a percentage.
     if(!$out.ContainsKey('cursorPlan') -and $null -ne $plan.limit -and [double]$plan.limit -gt 0) {
         $remaining=$plan.remaining
-        if($null -eq $remaining -and $null -ne $plan.used) { $remaining=[double]$plan.limit-[double]$plan.used }
+        $used=$plan.used
+        if($null -eq $used) { $used=$plan.includedSpend }
+        if($null -eq $remaining -and $null -ne $used) { $remaining=[double]$plan.limit-[double]$used }
         if($null -ne $remaining) { $out.cursorPlan=Window (100*[double]$remaining/[double]$plan.limit) $reset }
     }
     if($out.Count -eq 0) { throw 'Unsupported Cursor included quota response' }
     return $out
 }
 function Fetch-Cursor($settings) { return Parse-Cursor (Fetch-CursorResponse $settings) }
+function Read-CursorCliToken {
+    foreach($path in @(
+        (Join-Path $env:APPDATA 'Cursor\auth.json'),
+        (Join-Path $env:USERPROFILE '.cursor\auth.json'),
+        (Join-Path $env:LOCALAPPDATA 'Cursor\auth.json')
+    )) {
+        if(!(Test-Path -LiteralPath $path -PathType Leaf)) { continue }
+        try {
+            $json=Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
+            if($json.accessToken) { return [string]$json.accessToken }
+            if($json.access_token) { return [string]$json.access_token }
+        } catch { }
+    }
+    return $null
+}
 function Read-CursorToken($database) {
-    if (!(Test-Path -LiteralPath $database -PathType Leaf)) { throw 'Cursor local login not found' }
+    if (!(Test-Path -LiteralPath $database -PathType Leaf)) {
+        $cliToken=Read-CursorCliToken
+        if($cliToken) { return $cliToken }
+        throw 'Cursor local login not found'
+    }
     if (!('CursorLocalAuth' -as [type])) {
         Add-Type -TypeDefinition @'
 using System;
@@ -55,6 +80,7 @@ public static class CursorLocalAuth {
 '@
     }
     $token=[CursorLocalAuth]::Read($database)
+    if (!$token) { $token=Read-CursorCliToken }
     if (!$token) { throw 'Sign in to Cursor first' }
     return $token
 }
@@ -71,13 +97,18 @@ function Fetch-CursorResponse($settings) {
         $userId=($claims.sub -split '\|')[-1]
         if($userId -notmatch '^[a-zA-Z0-9._-]+$') { throw 'Invalid local Cursor login' }
         if($claims.exp -and [double]$claims.exp -le [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()) { throw 'Cursor login expired: open Cursor and sign in again' }
-        $session=New-Object Microsoft.PowerShell.Commands.WebRequestSession
-        $cookie=New-Object Net.Cookie('WorkosCursorSessionToken',($userId+'%3A%3A'+$token),'/','cursor.com')
-        $cookie.Secure=$true
-        $session.Cookies.Add($cookie)
         [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
         try {
-            return Invoke-RestMethod -Uri 'https://cursor.com/api/usage-summary' -WebSession $session -Headers @{Accept='application/json'} -TimeoutSec 15 -MaximumRedirection 0
-        } catch { throw 'Cursor usage request failed: open Cursor, check login and network' }
+            $headers=@{Authorization="Bearer $token";'Content-Type'='application/json';Accept='application/json'}
+            return Invoke-RestMethod -Method Post -Uri 'https://api2.cursor.sh/aiserver.v1.DashboardService/GetCurrentPeriodUsage' -Headers $headers -Body '{}' -TimeoutSec 15 -MaximumRedirection 0
+        } catch {
+            $session=New-Object Microsoft.PowerShell.Commands.WebRequestSession
+            $cookie=New-Object Net.Cookie('WorkosCursorSessionToken',($userId+'%3A%3A'+$token),'/','cursor.com')
+            $cookie.Secure=$true
+            $session.Cookies.Add($cookie)
+            try {
+                return Invoke-RestMethod -Uri 'https://cursor.com/api/usage-summary' -WebSession $session -Headers @{Accept='application/json'} -TimeoutSec 15 -MaximumRedirection 0
+            } catch { throw 'Cursor usage request failed: open Cursor, check login and network' }
+        }
     } finally { $token=$null; $claims=$null; $session=$null; $cookie=$null }
 }

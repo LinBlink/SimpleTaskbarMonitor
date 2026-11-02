@@ -50,6 +50,10 @@ Assert ($r.cursorPlan.value -eq '0%') 'Cursor exhausted percentage is valid'
 $cursor='{"individualUsage":{"plan":{"enabled":true,"limit":100,"remaining":40}}}'|ConvertFrom-Json
 $r=Parse-Cursor $cursor
 Assert ($r.cursorPlan.value -eq '40%') 'Cursor legacy numeric budget'
+$cursorCli='{"billingCycleStart":"1792227659000","billingCycleEnd":"1794906059000","planUsage":{"limit":2000,"totalPercentUsed":92.6,"autoPercentUsed":80,"apiPercentUsed":95}}'|ConvertFrom-Json
+$r=Parse-Cursor $cursorCli
+Assert ($r.cursorPlan.value -eq '7%') 'Cursor CLI DashboardService planUsage percentage'
+Assert ($r.cursorPlan.resetEpoch -eq 1794906059) 'Cursor CLI millisecond billingCycleEnd'
 Assert (!$r.ContainsKey('cursorAuto') -and !$r.ContainsKey('cursorApi')) 'Do not invent missing Cursor pools'
 $failed=$false
 try { Parse-Cursor ('{"individualUsage":{"plan":{"enabled":false,"totalPercentUsed":0}}}'|ConvertFrom-Json) } catch { $failed=$true }
