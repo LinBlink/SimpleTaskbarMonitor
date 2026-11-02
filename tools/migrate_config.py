@@ -51,11 +51,25 @@ def migrate(path,selection_profile=None):
         if section not in ('task_bar','taskbar_default_style'): continue
         for key in config[section]:
             if key!='task_bar_text_color' and not re.fullmatch(r'default\d+_text_color',key): continue
-            if value(config,section,key+'_item_ids'): continue
-            numbers=value(config,section,key).rstrip(',').split(',')
-            if len(numbers)%2 or len(numbers)//2!=len(legacy):
-                raise ValueError('Cannot safely infer legacy color IDs for '+section+'/'+key)
-            text=put(text,section,key+'_item_ids',','.join(legacy))
+            item_ids_str=value(config,section,key+'_item_ids')
+            if not item_ids_str:
+                numbers=value(config,section,key).rstrip(',').split(',')
+                if len(numbers)%2 or len(numbers)//2!=len(legacy):
+                    raise ValueError('Cannot safely infer legacy color IDs for '+section+'/'+key)
+                text=put(text,section,key+'_item_ids',','.join(legacy))
+            else:
+                ids=item_ids_str.split(',')
+                numbers=value(config,section,key).rstrip(',').split(',')
+                if len(numbers)==2*len(ids):
+                    changed=False
+                    for target,donor in (('AIUsageKimiSummary','AIUsageClaudeSummary'),('AIUsageAntigravitySummary','AIUsageCursorSummary')):
+                        if target in ids and donor in ids:
+                            ti=ids.index(target);di=ids.index(donor)
+                            if numbers[2*ti:2*ti+2]==['16777215','16777215'] and numbers[2*di:2*di+2]!=['16777215','16777215']:
+                                numbers[2*ti:2*ti+2]=numbers[2*di:2*di+2]
+                                changed=True
+                    if changed:
+                        text=put(text,section,key,','.join(numbers)+',')
     selected=value(config,'task_bar','plugin_display_item').split(',')
     mask=int(value(config,'task_bar','tbar_display_item','3'))
     if selection_profile:

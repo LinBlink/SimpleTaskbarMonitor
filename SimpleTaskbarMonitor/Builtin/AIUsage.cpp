@@ -64,7 +64,7 @@ public:
             if(job) { CloseHandle(job); job=nullptr; }
         }
         const wchar_t* keys[]={L"minimax5h",L"minimaxWeek",L"codex5h",L"codexWeek",L"cursorPlan",L"claude5h",L"claudeWeek",L"kimi5h",L"kimiWeek",L"antigravityPlan"};
-        const wchar_t* names[]={L"MiniMax 5h",L"MiniMax week",L"Codex 5h",L"Codex week",L"Cursor month",L"Claude 5h",L"Claude week",L"Kimi 5h",L"Kimi week/month",L"Antigravity lowest model"};
+        const wchar_t* names[]={L"MiniMax 5h",L"MiniMax week",L"Codex 5h",L"Codex week",L"Cursor month",L"Claude 5h",L"Claude week",L"Kimi 5h",L"Kimi month",L"Antigravity lowest model"};
         FILETIME ft{};GetSystemTimeAsFileTime(&ft);
         ULARGE_INTEGER ticks{};ticks.LowPart=ft.dwLowDateTime;ticks.HighPart=ft.dwHighDateTime;
         const auto epoch=ticks.QuadPart/10000000ULL-11644473600ULL;
@@ -78,18 +78,19 @@ public:
             window.reset=_wcstoui64(read(cache,keys[i],L"resetEpoch",L"0").c_str(),nullptr,10);
             window.maxAge=i==5 || i==6?1500:600;
             tooltip+=std::wstring(names[i])+L": "+GroupedUsage::Percent(window,epoch)+L", reset in "+
-                GroupedUsage::Reset(window,epoch,i==4 || i==9)+L"  "+window.status+L"\n";
+                GroupedUsage::Reset(window,epoch,i==4)+L"  "+window.status+L"\n";
         }
         items[0].resetAlert.Observe(windows[0].reset,epoch,now);
         items[1].resetAlert.Observe(windows[2].reset,epoch,now);
         items[3].resetAlert.Observe(windows[5].reset,epoch,now);
         items[4].resetAlert.Observe(windows[7].reset,epoch,now);
+        items[5].resetAlert.Observe(windows[9].reset,epoch,now);
         items[0].value=GroupedUsage::Summary(windows[0],windows[1],epoch);
         items[1].value=GroupedUsage::Summary(windows[2],windows[3],epoch);
         items[2].value=GroupedUsage::Percent(windows[4],epoch)+L","+GroupedUsage::Reset(windows[4],epoch,true);
         items[3].value=GroupedUsage::Summary(windows[5],windows[6],epoch);
         items[4].value=GroupedUsage::Summary(windows[7],windows[8],epoch);
-        items[5].value=GroupedUsage::Percent(windows[9],epoch)+L","+GroupedUsage::Reset(windows[9],epoch,true);
+        items[5].value=GroupedUsage::Percent(windows[9],epoch)+L","+GroupedUsage::Reset(windows[9],epoch,false);
         if(!process && now>=next && GetPrivateProfileIntW(L"settings",L"EnableQueries",1,(dir+L"\\AIUsage.ini").c_str()) && GetFileAttributesW((dir+L"\\AIUsage.Refresh.ps1").c_str())!=INVALID_FILE_ATTRIBUTES) {
             int seconds=GetPrivateProfileIntW(L"settings",L"RefreshSeconds",180,(dir+L"\\AIUsage.ini").c_str());
             next=now+static_cast<ULONGLONG>(std::clamp(seconds,60,3600))*1000;

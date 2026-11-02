@@ -378,7 +378,7 @@ void CTaskBarDlg::DrawPluginItem(IDrawCommon& drawer, IPluginItem* item, CRect r
         CRect label_bottom{label_top.left, middle, label_top.right, rect.bottom};
         drawer.DrawWindowText(label_top, theApp.m_taskbar_data.disp_str.GetConst(item).c_str(), label_text_color);
         const wchar_t* second_label = count == 2 ? (std::wstring(item->GetItemId()) == L"AIUsageCursorSummary" ? L"MO" : L"RST") :
-            (std::wstring(item->GetItemId()) == L"AIUsageKimiSummary" ? L"W/M" : L"WK");
+            (std::wstring(item->GetItemId()) == L"AIUsageKimiSummary" ? L"MO" : L"WK");
         if (label_width > 0) drawer.DrawWindowText(label_bottom, second_label, label_text_color);
         const int left = rect.left + label_width;
         bool stale[2]{};

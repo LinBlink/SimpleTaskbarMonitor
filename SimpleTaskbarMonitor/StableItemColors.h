@@ -22,6 +22,13 @@ inline std::vector<Pair> Decode(const std::vector<std::wstring>& numbers,
     for (const auto& id : currentIds) {
         auto it=colors.find(id);
         if(it==colors.end()) it=colors.find(GroupedUsage::LegacyColorId(id));
+        if(id==L"AIUsageKimiSummary" || id==L"AIUsageAntigravitySummary") {
+            const wchar_t* donorId = id==L"AIUsageKimiSummary" ? L"AIUsageClaudeSummary" : L"AIUsageCursorSummary";
+            auto donor=colors.find(donorId);
+            if(donor==colors.end()) donor=colors.find(GroupedUsage::LegacyColorId(donorId));
+            if(donor!=colors.end() && (it==colors.end() || (it->second.label==fallback && it->second.value==fallback && donor->second.value!=fallback)))
+                it=donor;
+        }
         result.push_back(it==colors.end()?Pair{fallback,fallback}:it->second);
     }
     return result;

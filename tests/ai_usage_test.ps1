@@ -88,4 +88,8 @@ Assert ($r.antigravityPlan.value -eq '0%') 'Antigravity exhausted quota is valid
 $failed=$false
 try { Parse-Antigravity ('{"available_models":{"response":{"clientModelConfigs":[]}}}'|ConvertFrom-Json) } catch { $failed=$true }
 Assert $failed 'Antigravity missing model quota is not full quota'
+$agyCloud='{"models":{"chat_internal":{"isInternal":true,"quotaInfo":{"remainingFraction":0.1,"resetTime":"2026-11-02T07:59:13Z"}},"gemini-3-flash":{"displayName":"Gemini 3 Flash","quotaInfo":{"remainingFraction":0.91,"resetTime":"2026-11-02T07:59:13Z"}}}}'|ConvertFrom-Json
+$r=Parse-Antigravity $agyCloud
+Assert ($r.antigravityPlan.value -eq '91%') 'Antigravity cloud API ignores internal models and parses remainingFraction'
+Assert ($r.antigravityPlan.resetEpoch -eq [DateTimeOffset]::Parse('2026-11-02T07:59:13Z').ToUnixTimeSeconds()) 'Antigravity cloud API reset time'
 Write-Host 'PASS: Antigravity minimum model quota, reset times, exhausted and missing quota.'
