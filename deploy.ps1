@@ -5,7 +5,10 @@ if (!$SkipBuild) { & (Join-Path $root 'build.ps1') }
 $built=Join-Path $root 'artifacts\build\x64\Release (lite)'
 if (!(Test-Path -LiteralPath (Join-Path $built 'SimpleTaskbarMonitor.exe'))) { throw 'Build the Lite Release first.' }
 $destinationPath=[IO.Path]::GetFullPath($Destination).TrimEnd('\')
-if (!(Test-Path -LiteralPath $destinationPath)) { throw 'Destination must already exist.' }
+if (!(Test-Path -LiteralPath $destinationPath)) {
+    New-Item -ItemType Directory -Path $destinationPath -Force | Out-Null
+    Write-Host "Created deployment directory: $destinationPath"
+}
 $commit=(& git -C $root rev-parse --short HEAD).Trim()
 $backupRoot=$destinationPath+'-archive'
 $backup=Join-Path $backupRoot ('source-deploy-'+(Get-Date -Format 'yyyyMMdd-HHmmss'))
@@ -81,7 +84,7 @@ foreach($task in @(Get-ScheduledTask -TaskPath '\TrafficMonitor\' -ErrorAction S
             $task | Set-ScheduledTask -ErrorAction Stop | Out-Null
             Write-Host "Updated scheduled task action: $($task.TaskPath)$($task.TaskName) -> $binary"
         } catch {
-            throw "Could not update scheduled task '$($task.TaskPath)$($task.TaskName)' to the deployed executable. Open Task Scheduler and point its action at $binary, then redeploy."
+            Write-Warning "Could not update scheduled task '$($task.TaskPath)$($task.TaskName)' (run PowerShell as Administrator to update autorun task path)."
         }
     }
 }
