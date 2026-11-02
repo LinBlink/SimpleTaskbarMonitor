@@ -2,6 +2,7 @@
 #include "SettingsHelper.h"
 #include "TrafficMonitor.h"
 #include "StableItemColors.h"
+#include "Builtin/AIUsageLayout.h"
 
 CSettingsHelper::CSettingsHelper()
     : CIniHelper(theApp.m_config_path)
@@ -143,8 +144,13 @@ void CSettingsHelper::LoadPluginDisplayStr(const wchar_t* AppName, DispStrings& 
     {
         std::wstring str{ plugin->GetItemLableText() };
         bool exist = GetString(AppName, plugin->GetItemId(), str);
-        if (!is_main_window && std::wstring(plugin->GetItemId()) == L"AIUsageAntigravitySummary" && str == L"AG:")
-            str = L"AG-G:";
+        if (!is_main_window && AIUsageLayout::ColumnCount(plugin->GetItemId()))
+        {
+            if (std::wstring(plugin->GetItemId()) == L"AIUsageAntigravitySummary" && (str == L"AG:" || str == L"AG-G:" || str == L"AG-G"))
+                str = L"AG";
+            else if (!str.empty() && str.back() == L':')
+                str.pop_back();
+        }
         //主窗口只读取配置文件中存在的项，任务栏窗口读取所有项
         if (!is_main_window || exist)
             disp_str.Load(plugin->GetItemId(), str);

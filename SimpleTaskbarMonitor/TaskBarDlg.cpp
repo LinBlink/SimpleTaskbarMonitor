@@ -15,11 +15,12 @@
 #include "Builtin/BuiltinFeatures.h"
 #include "Builtin/AIUsageLayout.h"
 
-static AIUsageLayout::Layout MeasureAIColumns(CDC* dc, const wchar_t* id, int gap)
+static int MeasureAICompactValueWidth(CDC* dc, const wchar_t* id, int pad)
 {
-    return AIUsageLayout::MeasureColumns(AIUsageLayout::ColumnCount(id),
-        [dc](const std::wstring& text) { return static_cast<int>(dc->GetTextExtent(text.c_str()).cx); }, gap,
-        std::wstring(id) == L"AIUsageCursorSummary");
+    if (std::wstring(id) == L"AIUsageAntigravitySummary")
+        return static_cast<int>(dc->GetTextExtent(L"100/99/99%").cx) + pad;
+    return max(static_cast<int>(dc->GetTextExtent(L"100%").cx),
+               static_cast<int>(dc->GetTextExtent(L"9.9h").cx)) + pad;
 }
 
 #ifdef DEBUG
@@ -372,31 +373,86 @@ void CTaskBarDlg::DrawPluginItem(IDrawCommon& drawer, IPluginItem* item, CRect r
 
     if (const int count = AIUsageLayout::ColumnCount(item->GetItemId()))
     {
-        const auto layout = MeasureAIColumns(m_pDC, item->GetItemId(), DPI(2));
+        const std::wstring itemId = item->GetItemId();
         const auto values = AIUsageLayout::Split(item->GetItemValueText());
-        const int middle = rect.top + rect.Height() / 2;
+        const int bar_h = DPI(3);
+        const int content_bottom = rect.bottom - bar_h;
+        const int middle = rect.top + (content_bottom - rect.top) / 2;
         CRect label_top{rect.left, rect.top, rect.left + label_width - DPI(4), middle};
-        CRect label_bottom{label_top.left, middle, label_top.right, rect.bottom};
+        CRect label_bottom{label_top.left, middle, label_top.right, content_bottom};
+        CRect value_top{rect.left + label_width, rect.top, rect.right, middle};
+        CRect value_bottom{rect.left + label_width, middle, rect.right, content_bottom};
         drawer.DrawWindowText(label_top, theApp.m_taskbar_data.disp_str.GetConst(item).c_str(), label_text_color);
-        const wchar_t* second_label = (std::wstring(item->GetItemId()) == L"AIUsageCursorSummary" || std::wstring(item->GetItemId()) == L"AIUsageKimiSummary") ? L"MO" : L"WK";
-        if (label_width > 0) drawer.DrawWindowText(label_bottom, second_label, label_text_color);
-        const int left = rect.left + label_width;
+
+        std::wstring bot_left_text, top_right_text, bot_right_text;
         bool stale[2]{};
-        for (int i = 0; i < count; ++i)
+        int bar_permille = -1;
+        int quota_pct = -1;
+        if (count == 2)
         {
-            const auto& col = layout.columns[i];
-            CRect cell{left + col.left, col.row ? middle : rect.top,
-                       left + col.left + col.width, col.row ? rect.bottom : middle};
-            drawer.DrawWindowText(cell, values[i].text.c_str(), value_text_color, IDrawCommon::Alignment::RIGHT);
-            stale[col.row] = stale[col.row] || values[i].stale;
+            top_right_text = values[0].text;
+            bot_left_text = AIUsageLayout::CompactTime(values[1].text);
+            bot_right_text = L"MO";
+            stale[0] = values[0].stale;
+            stale[1] = values[1].stale;
+            bar_permille = AIUsageLayout::ResetProgressPermille(values[1].text, 30.0 * 24.0);
+            quota_pct = AIUsageLayout::MinQuotaPercent(values[0].text);
         }
+        else if (itemId == L"AIUsageAntigravitySummary")
+        {
+            top_right_text = values[0].text;
+            bot_left_text = AIUsageLayout::CompactTime(values[1].text);
+            bot_right_text = values[2].text;
+            stale[0] = values[0].stale || values[1].stale;
+            stale[1] = values[2].stale || values[3].stale;
+            bar_permille = AIUsageLayout::ResetProgressPermille(values[3].text, 168.0);
+            quota_pct = AIUsageLayout::MinQuotaPercent(values[2].text);
+            if (quota_pct < 0) quota_pct = AIUsageLayout::MinQuotaPercent(values[0].text);
+        }
+        else
+        {
+            top_right_text = values[0].text;
+            bot_left_text = values[2].text;
+            const std::wstring& raw_reset = (values[1].text != L"--") ? values[1].text : values[3].text;
+            bot_right_text = AIUsageLayout::CompactTime(raw_reset);
+            stale[0] = values[0].stale || values[1].stale;
+            stale[1] = values[2].stale || values[3].stale;
+            const double period_hours = (itemId == L"AIUsageKimiSummary") ? (30.0 * 24.0) : 168.0;
+            bar_permille = AIUsageLayout::ResetProgressPermille(values[3].text, period_hours);
+            quota_pct = AIUsageLayout::MinQuotaPercent(values[2].text);
+            if (quota_pct < 0) quota_pct = AIUsageLayout::MinQuotaPercent(values[0].text);
+        }
+
+        if (label_width > 0)
+            drawer.DrawWindowText(label_bottom, bot_left_text.c_str(), label_text_color);
+        drawer.DrawWindowText(value_top, top_right_text.c_str(), value_text_color, IDrawCommon::Alignment::RIGHT);
+        drawer.DrawWindowText(value_bottom, bot_right_text.c_str(), value_text_color, IDrawCommon::Alignment::RIGHT);
+
+        if (bar_permille >= 0)
+        {
+            CRect bar_track{rect.left, rect.bottom - bar_h, rect.right, rect.bottom - DPI(1)};
+            if (bar_track.bottom <= bar_track.top) bar_track.bottom = bar_track.top + 1;
+            drawer.FillRect(bar_track, RGB(55, 60, 72));
+            const int fill_w = bar_track.Width() * bar_permille / 1000;
+            if (fill_w > 0)
+            {
+                const COLORREF bar_col = (quota_pct < 0 || quota_pct >= 50) ? RGB(72, 219, 132) :
+                                         (quota_pct >= 20 ? RGB(255, 190, 40) : RGB(255, 80, 80));
+                CRect bar_fill{bar_track.left, bar_track.top, bar_track.left + fill_w, bar_track.bottom};
+                drawer.FillRect(bar_fill, bar_col);
+            }
+        }
+
         for (int row = 0; row < 2; ++row)
         {
             if (stale[row] && label_width > 0)
             {
                 const auto& label = row ? label_bottom : label_top;
-                CRect dot{label.right + DPI(1), label.CenterPoint().y,
-                          label.right + DPI(3), label.CenterPoint().y + DPI(2)};
+                int dot_y = label.CenterPoint().y;
+                if (row == 1 && dot_y < rect.top + rect.Height() / 2)
+                    dot_y = rect.top + rect.Height() / 2 + 1;
+                CRect dot{label.right + DPI(1), dot_y,
+                          label.right + DPI(3), dot_y + DPI(2)};
                 drawer.FillRect(dot, RGB(255, 165, 0));
             }
         }
@@ -808,11 +864,11 @@ void CTaskBarDlg::CalculateWindowSize()
     std::map<CommonDisplayItem, ItemWidth> item_widths;
 
     m_pDC->SelectObject(&m_font);
-    // Use the same base label width for 2-letter AI providers, expanding for wider labels like AG-G:.
-    int ai_label_width = 0;
-    for (int i = 0; i < 5; ++i)
-        if (auto item = Builtin::AIUsage()->GetItem(i))
-            ai_label_width = max(ai_label_width, m_pDC->GetTextExtent(theApp.m_taskbar_data.disp_str.GetConst(item).c_str()).cx);
+    // Left column of compact 2x2 AI items holds provider name on top and week% / reset time below.
+    int ai_label_width = max(static_cast<int>(m_pDC->GetTextExtent(L"100%").cx),
+                             static_cast<int>(m_pDC->GetTextExtent(L"9.9h").cx));
+    for (int i = 0; auto item = Builtin::AIUsage()->GetItem(i); ++i)
+        ai_label_width = max(ai_label_width, static_cast<int>(m_pDC->GetTextExtent(theApp.m_taskbar_data.disp_str.GetConst(item).c_str()).cx));
     if (ai_label_width > 0) ai_label_width += DPI(4);
     //计算标签和数值的宽度
     //const auto& item_map = theApp.m_taskbar_data.disp_str.GetAllItems();
@@ -840,7 +896,7 @@ void CTaskBarDlg::CalculateWindowSize()
                     if (AIUsageLayout::ColumnCount(plugin->GetItemId()))
                     {
                         label_width = max(ai_label_width, label_width + DPI(4));
-                        value_width = MeasureAIColumns(m_pDC, plugin->GetItemId(), DPI(2)).width;
+                        value_width = MeasureAICompactValueWidth(m_pDC, plugin->GetItemId(), DPI(2));
                     }
                 }
             }

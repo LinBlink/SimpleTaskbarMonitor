@@ -5,13 +5,13 @@ from pathlib import Path
 import argparse, configparser, re
 
 NORMAL_IDS=['up_string','down_string','cpu_string','memory_string','gpu_string','cpu_temp_string','gpu_temp_string','hdd_temp_string','main_board_temp_string','hdd_string','total_speed_string','cpu_freq_string','today_traffic_string']
-AI_IDS=['AIUsageMiniMaxSummary','AIUsageCodexSummary','AIUsageCursorSummary','AIUsageClaudeSummary','AIUsageKimiSummary','AIUsageAntigravitySummary','AIUsageAntigravityClaudeSummary','AIUsageAntigravityArgonSummary']
+AI_IDS=['AIUsageMiniMaxSummary','AIUsageCodexSummary','AIUsageCursorSummary','AIUsageClaudeSummary','AIUsageKimiSummary','AIUsageAntigravitySummary']
 NATIVE_IDS=AI_IDS+['CustomDualCountdown','b5R30ITQ','BatteryPowerMon','BatteryPercentageMon','BatteryCapacityMon','BatteryVoltageMon','BatteryTimeMon']
 CURRENT_IDS=[x for x in NORMAL_IDS if x not in ('hdd_temp_string','main_board_temp_string')]+NATIVE_IDS
-OLD_V4_IDS=[x for x in CURRENT_IDS if x not in ('AIUsageAntigravityClaudeSummary','AIUsageAntigravityArgonSummary')]
+OLD_V5_IDS=[x for x in NORMAL_IDS if x not in ('hdd_temp_string','main_board_temp_string')]+['AIUsageMiniMaxSummary','AIUsageCodexSummary','AIUsageCursorSummary','AIUsageClaudeSummary','AIUsageKimiSummary','AIUsageAntigravitySummary','AIUsageAntigravityClaudeSummary','AIUsageAntigravityArgonSummary','CustomDualCountdown','b5R30ITQ','BatteryPowerMon','BatteryPercentageMon','BatteryCapacityMon','BatteryVoltageMon','BatteryTimeMon']
 
 def summary_id(item):
-    for provider in ['MiniMax','Codex','Cursor','Claude','Kimi']:
+    for provider in ['MiniMax','Codex','Cursor','Claude','Kimi','Antigravity']:
         if item.startswith('AIUsage'+provider):return 'AIUsage'+provider+'Summary'
     return item
 
@@ -63,14 +63,7 @@ def migrate(path,selection_profile=None):
                 numbers=value(config,section,key).rstrip(',').split(',')
                 if len(numbers)==2*len(ids):
                     changed=False
-                    if 'AIUsageAntigravitySummary' in ids:
-                        for new_id in ('AIUsageAntigravityClaudeSummary','AIUsageAntigravityArgonSummary'):
-                            if new_id not in ids:
-                                ai_idx=ids.index('AIUsageAntigravitySummary')
-                                ids.append(new_id)
-                                numbers.extend(numbers[2*ai_idx:2*ai_idx+2])
-                                changed=True
-                    for target,donor in (('AIUsageKimiSummary','AIUsageClaudeSummary'),('AIUsageAntigravitySummary','AIUsageCursorSummary'),('AIUsageAntigravityClaudeSummary','AIUsageCursorSummary'),('AIUsageAntigravityArgonSummary','AIUsageCursorSummary')):
+                    for target,donor in (('AIUsageKimiSummary','AIUsageClaudeSummary'),('AIUsageAntigravitySummary','AIUsageCursorSummary')):
                         if target in ids and donor in ids:
                             ti=ids.index(target);di=ids.index(donor)
                             if numbers[2*ti:2*ti+2]==['16777215','16777215'] and numbers[2*di:2*di+2]!=['16777215','16777215']:
@@ -78,11 +71,9 @@ def migrate(path,selection_profile=None):
                                 changed=True
                     if changed:
                         text=put(text,section,key,','.join(numbers)+',')
-                        text=put(text,section,key+'_item_ids',','.join(ids))
-    if value(config,'plugin_display_str_taskbar_window','AIUsageAntigravitySummary') in ('AG:','AG-G:'):
-        text=put(text,'plugin_display_str_taskbar_window','AIUsageAntigravitySummary','AG-G:')
-        text=put(text,'plugin_display_str_taskbar_window','AIUsageAntigravityClaudeSummary','AG-C:')
-        text=put(text,'plugin_display_str_taskbar_window','AIUsageAntigravityArgonSummary','AG-A:')
+    for ai_key,short_lbl in (('AIUsageMiniMaxSummary','MM'),('AIUsageCodexSummary','CX'),('AIUsageCursorSummary','CU'),('AIUsageClaudeSummary','CL'),('AIUsageKimiSummary','KI'),('AIUsageAntigravitySummary','AG')):
+        if value(config,'plugin_display_str_taskbar_window',ai_key):
+            text=put(text,'plugin_display_str_taskbar_window',ai_key,short_lbl)
     selected=value(config,'task_bar','plugin_display_item').split(',')
     mask=int(value(config,'task_bar','tbar_display_item','3'))
     if selection_profile:
@@ -91,14 +82,14 @@ def migrate(path,selection_profile=None):
         mask|=int(value(old,'task_bar','tbar_display_item','0'))
     version=value(config,'app','builtin_configuration_version')
     selected={summary_id(x) for x in selected}
-    if version!='5': selected.update(('AIUsageKimiSummary','AIUsageAntigravitySummary','AIUsageAntigravityClaudeSummary','AIUsageAntigravityArgonSummary'))
+    if version!='6': selected.update(('AIUsageKimiSummary','AIUsageAntigravitySummary'))
     selected=[x for x in NATIVE_IDS if x in selected]
     text=put(text,'task_bar','plugin_display_item',','.join(selected))
     text=put(text,'task_bar','tbar_display_item',mask|(1<<5)|(1<<6))
     text=put(text,'general','hardware_monitor_item',int(value(config,'general','hardware_monitor_item','0'))|3)
-    if version!='5':
+    if version!='6':
         saved_ids=value(config,'task_bar','task_bar_text_color_item_ids')
-        old_ids=OLD_V4_IDS if version=='4' else (saved_ids.split(',') if saved_ids else legacy)
+        old_ids=OLD_V5_IDS if version=='5' else (CURRENT_IDS if version=='4' else (saved_ids.split(',') if saved_ids else legacy))
         order=[]
         for token in value(config,'task_bar','item_order').split(','):
             if not token.strip().isdigit():continue
@@ -108,7 +99,7 @@ def migrate(path,selection_profile=None):
                 if new_index not in order:order.append(new_index)
         order += [i for i in range(len(CURRENT_IDS)) if i not in order]
         text=put(text,'task_bar','item_order',','.join(map(str,order)))
-        text=put(text,'app','builtin_configuration_version','5')
+        text=put(text,'app','builtin_configuration_version','6')
     path.write_bytes(text.encode(encoding))
     return len(selected)
 
