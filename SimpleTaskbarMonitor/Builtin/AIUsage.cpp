@@ -29,23 +29,25 @@ public:
     const wchar_t* GetItemValueText() const override { return value.c_str(); }
     const wchar_t* GetItemValueSampleText() const override {
         const std::wstring itemId=id;
-        return itemId==L"AIUsageCursorSummary" || itemId==L"AIUsageAntigravitySummary" ? L"100%*,31.0d*" : L"100%*,5.0h*,100%*,168.0h*";
+        return itemId==L"AIUsageCursorSummary" ? L"100%*,31.0d*" : (itemId==L"AIUsageAntigravityArgonSummary" ? L"100%*,168.0h*" : L"100%*,5.0h*,100%*,168.0h*");
     }
 };
 class Plugin : public ITMPlugin {
-    Item items[6]={{L"MiniMax usage (5h/week)",L"AIUsageMiniMaxSummary",L"MM:"},
+    Item items[8]={{L"MiniMax usage (5h/week)",L"AIUsageMiniMaxSummary",L"MM:"},
                    {L"Codex usage (5h/week)",L"AIUsageCodexSummary",L"CX:"},
                    {L"Cursor usage (month)",L"AIUsageCursorSummary",L"CU:"},
                    {L"Claude usage (5h/week)",L"AIUsageClaudeSummary",L"CL:"},
                    {L"Kimi usage (5h/second period)",L"AIUsageKimiSummary",L"KI:"},
-                   {L"Google Antigravity usage (lowest model quota)",L"AIUsageAntigravitySummary",L"AG:"}};
+                   {L"Google Antigravity Gemini usage (5h/week)",L"AIUsageAntigravitySummary",L"AG-G:"},
+                   {L"Google Antigravity Claude/GPT usage (5h/week)",L"AIUsageAntigravityClaudeSummary",L"AG-C:"},
+                   {L"Google Antigravity Argon usage (week)",L"AIUsageAntigravityArgonSummary",L"AG-A:"}};
     HANDLE process=nullptr;
     HANDLE job=nullptr;
     ULONGLONG next=0,started=0;
     std::wstring tooltip;
 public:
     ~Plugin() { if(job) CloseHandle(job); if(process) CloseHandle(process); }
-    IPluginItem* GetItem(int i) override { return i>=0 && i<6 ? &items[i] : nullptr; }
+    IPluginItem* GetItem(int i) override { return i>=0 && i<8 ? &items[i] : nullptr; }
     const wchar_t* GetInfo(PluginInfoIndex i) override {
         switch(i) {
         case TMI_NAME:return L"AI subscription usage";
@@ -63,14 +65,14 @@ public:
             CloseHandle(process); process=nullptr;
             if(job) { CloseHandle(job); job=nullptr; }
         }
-        const wchar_t* keys[]={L"minimax5h",L"minimaxWeek",L"codex5h",L"codexWeek",L"cursorPlan",L"claude5h",L"claudeWeek",L"kimi5h",L"kimiWeek",L"antigravityPlan"};
-        const wchar_t* names[]={L"MiniMax 5h",L"MiniMax week",L"Codex 5h",L"Codex week",L"Cursor month",L"Claude 5h",L"Claude week",L"Kimi 5h",L"Kimi month",L"Antigravity lowest model"};
+        const wchar_t* keys[]={L"minimax5h",L"minimaxWeek",L"codex5h",L"codexWeek",L"cursorPlan",L"claude5h",L"claudeWeek",L"kimi5h",L"kimiWeek",L"antigravityGemini5h",L"antigravityGeminiWeek",L"antigravityClaude5h",L"antigravityClaudeWeek",L"antigravityArgonWeek"};
+        const wchar_t* names[]={L"MiniMax 5h",L"MiniMax week",L"Codex 5h",L"Codex week",L"Cursor month",L"Claude 5h",L"Claude week",L"Kimi 5h",L"Kimi month",L"Antigravity Gemini 5h",L"Antigravity Gemini week",L"Antigravity Claude/GPT 5h",L"Antigravity Claude/GPT week",L"Antigravity Argon week"};
         FILETIME ft{};GetSystemTimeAsFileTime(&ft);
         ULARGE_INTEGER ticks{};ticks.LowPart=ft.dwLowDateTime;ticks.HighPart=ft.dwHighDateTime;
         const auto epoch=ticks.QuadPart/10000000ULL-11644473600ULL;
-        GroupedUsage::Window windows[10];
-        tooltip=L"Top: short-period quota. Bottom: secondary quota and reset. Cursor/Antigravity: remaining quota and reset. A dot marks stale data; -- means unknown.\n";
-        for(int i=0;i<10;++i) {
+        GroupedUsage::Window windows[14];
+        tooltip=L"Top: short-period quota. Bottom: secondary quota and reset. Cursor/Argon: remaining quota and reset. A dot marks stale data; -- means unknown.\n";
+        for(int i=0;i<14;++i) {
             auto& window=windows[i];
             window.remaining=read(cache,keys[i],L"value",L"--");
             window.status=read(cache,keys[i],L"status",L"Waiting for first query");
@@ -85,12 +87,16 @@ public:
         items[3].resetAlert.Observe(windows[5].reset,epoch,now);
         items[4].resetAlert.Observe(windows[7].reset,epoch,now);
         items[5].resetAlert.Observe(windows[9].reset,epoch,now);
+        items[6].resetAlert.Observe(windows[11].reset,epoch,now);
+        items[7].resetAlert.Observe(windows[13].reset,epoch,now);
         items[0].value=GroupedUsage::Summary(windows[0],windows[1],epoch);
         items[1].value=GroupedUsage::Summary(windows[2],windows[3],epoch);
         items[2].value=GroupedUsage::Percent(windows[4],epoch)+L","+GroupedUsage::Reset(windows[4],epoch,true);
         items[3].value=GroupedUsage::Summary(windows[5],windows[6],epoch);
         items[4].value=GroupedUsage::Summary(windows[7],windows[8],epoch);
-        items[5].value=GroupedUsage::Percent(windows[9],epoch)+L","+GroupedUsage::Reset(windows[9],epoch,false);
+        items[5].value=GroupedUsage::Summary(windows[9],windows[10],epoch);
+        items[6].value=GroupedUsage::Summary(windows[11],windows[12],epoch);
+        items[7].value=GroupedUsage::Percent(windows[13],epoch)+L","+GroupedUsage::Reset(windows[13],epoch,false);
         if(!process && now>=next && GetPrivateProfileIntW(L"settings",L"EnableQueries",1,(dir+L"\\AIUsage.ini").c_str()) && GetFileAttributesW((dir+L"\\AIUsage.Refresh.ps1").c_str())!=INVALID_FILE_ATTRIBUTES) {
             int seconds=GetPrivateProfileIntW(L"settings",L"RefreshSeconds",180,(dir+L"\\AIUsage.ini").c_str());
             next=now+static_cast<ULONGLONG>(std::clamp(seconds,60,3600))*1000;
@@ -122,7 +128,7 @@ void Builtin::RequestAIUsageRefresh() { static_cast<Plugin*>(AIUsage())->OnPlugi
 
 bool Builtin::IsAIResetHighlighted(const IPluginItem* item, unsigned long long tick) {
     auto feature=AIUsage();
-    for(int i=0;i<6;++i)
+    for(int i=0;i<8;++i)
         if(feature->GetItem(i)==item)
             return static_cast<const Item*>(item)->resetAlert.Highlight(tick);
     return false;

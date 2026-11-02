@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "SettingsHelper.h"
 #include "TrafficMonitor.h"
 #include "StableItemColors.h"
@@ -143,6 +143,8 @@ void CSettingsHelper::LoadPluginDisplayStr(const wchar_t* AppName, DispStrings& 
     {
         std::wstring str{ plugin->GetItemLableText() };
         bool exist = GetString(AppName, plugin->GetItemId(), str);
+        if (!is_main_window && std::wstring(plugin->GetItemId()) == L"AIUsageAntigravitySummary" && str == L"AG:")
+            str = L"AG-G:";
         //主窗口只读取配置文件中存在的项，任务栏窗口读取所有项
         if (!is_main_window || exist)
             disp_str.Load(plugin->GetItemId(), str);

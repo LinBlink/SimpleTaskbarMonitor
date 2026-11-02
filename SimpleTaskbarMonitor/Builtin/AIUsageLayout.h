@@ -5,19 +5,20 @@
 
 namespace AIUsageLayout {
 inline int ColumnCount(const std::wstring& id) {
-    if (id == L"AIUsageCursorSummary" || id == L"AIUsageAntigravitySummary") return 2;
-    if (id == L"AIUsageMiniMaxSummary" || id == L"AIUsageCodexSummary" || id == L"AIUsageClaudeSummary" || id == L"AIUsageKimiSummary") return 4;
+    if (id == L"AIUsageCursorSummary" || id == L"AIUsageAntigravityArgonSummary") return 2;
+    if (id == L"AIUsageMiniMaxSummary" || id == L"AIUsageCodexSummary" || id == L"AIUsageClaudeSummary" || id == L"AIUsageKimiSummary" || id == L"AIUsageAntigravitySummary" || id == L"AIUsageAntigravityClaudeSummary") return 4;
     return 0;
 }
 struct Column { int left{}, width{}, row{}; };
 struct Layout { std::array<Column,4> columns{}; int count{}, width{}; };
 // Both quota periods share physical columns; stale indicators belong to the label.
-template<class Measure> Layout MeasureColumns(int count, Measure measure, int gap) {
+template<class Measure> Layout MeasureColumns(int count, Measure measure, int gap, bool days=true) {
     Layout result; result.count=count;
     int digit=0;
     for(wchar_t c=L'0';c<=L'9';++c) digit=(std::max)(digit,measure(std::wstring(1,c)));
     const int percent=(std::max)(measure(L"--"),digit*3+measure(L"%"));
-    const int time=(std::max)(measure(L"--"),digit*(count==2?3:4)+measure(count==2?L".d":L".h"));
+    const bool useDays = count==2 && days;
+    const int time=(std::max)(measure(L"--"),digit*(useDays?3:4)+measure(useDays?L".d":L".h"));
     if(count==2) {
         result.width=(std::max)(percent,time);
         result.columns[0]={0,result.width,0};

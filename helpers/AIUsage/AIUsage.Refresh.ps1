@@ -192,7 +192,7 @@ function Refresh-Usage {
             'cursor' { @('cursorPlan') }
             'claude' { @('claude5h','claudeWeek') }
             'kimi' { @('kimi5h','kimiWeek') }
-            'antigravity' { @('antigravityPlan') }
+            'antigravity' { @('antigravityGemini5h','antigravityGeminiWeek','antigravityClaude5h','antigravityClaudeWeek','antigravityArgonWeek','antigravityPlan') }
         }
         $setting='Enable'+[cultureinfo]::InvariantCulture.TextInfo.ToTitleCase($provider)
         if($settings.ContainsKey($setting) -and $settings[$setting] -eq '0') { continue }
@@ -225,7 +225,7 @@ function Refresh-Usage {
         }
     }
     $lines = New-Object 'Collections.Generic.List[string]'
-    foreach ($k in @('minimax5h','minimaxWeek','codex5h','codexWeek','cursorPlan','claude5h','claudeWeek','kimi5h','kimiWeek','antigravityPlan')) {
+    foreach ($k in @('minimax5h','minimaxWeek','codex5h','codexWeek','cursorPlan','claude5h','claudeWeek','kimi5h','kimiWeek','antigravityGemini5h','antigravityGeminiWeek','antigravityClaude5h','antigravityClaudeWeek','antigravityArgonWeek','antigravityPlan')) {
         $lines.Add("[$k]")
         foreach ($field in @('value','reset','resetEpoch','updated','status','nextAttempt')) { $lines.Add("$field=$($cache[$k][$field])") }
     }

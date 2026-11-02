@@ -92,4 +92,11 @@ $agyCloud='{"models":{"chat_internal":{"isInternal":true,"quotaInfo":{"remaining
 $r=Parse-Antigravity $agyCloud
 Assert ($r.antigravityPlan.value -eq '91%') 'Antigravity cloud API ignores internal models and parses remainingFraction'
 Assert ($r.antigravityPlan.resetEpoch -eq [DateTimeOffset]::Parse('2026-11-02T07:59:13Z').ToUnixTimeSeconds()) 'Antigravity cloud API reset time'
-Write-Host 'PASS: Antigravity minimum model quota, reset times, exhausted and missing quota.'
+$agyGroups='{"quotas":[{"groupName":"Gemini Models","buckets":[{"quotaId":"gemini-weekly","label":"Weekly Limit Remaining","remainingPercentage":94.56,"resetTime":"2026-11-08T09:13:00Z"},{"quotaId":"gemini-5h","label":"Five Hour Limit Remaining","remainingPercentage":99.71,"resetTime":"2026-11-02T20:43:00Z"}]},{"groupName":"Claude and GPT models","buckets":[{"quotaId":"claude-weekly","label":"Weekly Limit Remaining","remainingPercentage":81.02,"resetTime":"2026-11-08T09:12:00Z"},{"quotaId":"claude-5h","label":"Five Hour Limit Remaining","remainingPercentage":100,"resetTime":"1970-01-01T00:00:00Z"}]},{"groupName":"Gemini 4 Argon","buckets":[{"quotaId":"argon-weekly","label":"Gemini 4 Argon Weekly Limit","remainingPercentage":71.25,"resetTime":"2026-11-08T13:58:00Z"}]}]}'|ConvertFrom-Json
+$r=Parse-Antigravity $agyGroups
+Assert ($r.antigravityGemini5h.value -eq '100%' -and $r.antigravityGeminiWeek.value -eq '95%') 'Antigravity Gemini 5h and weekly group quotas'
+Assert ($r.antigravityClaude5h.value -eq '100%' -and $r.antigravityClaudeWeek.value -eq '81%') 'Antigravity Claude/GPT 5h and weekly group quotas'
+Assert ($r.antigravityClaude5h.resetEpoch -eq 0) 'Antigravity 1970 epoch reset Time treated as available (0)'
+Assert ($r.antigravityArgonWeek.value -eq '71%') 'Antigravity Argon weekly group quota'
+Assert ($r.antigravityPlan.value -eq '71%') 'Antigravity overall lowest bucket across groups'
+Write-Host 'PASS: Antigravity group quotas, minimum model quota, reset times, exhausted and missing quota.'

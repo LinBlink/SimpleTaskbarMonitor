@@ -22,7 +22,7 @@ inline std::vector<Pair> Decode(const std::vector<std::wstring>& numbers,
     for (const auto& id : currentIds) {
         auto it=colors.find(id);
         if(it==colors.end()) it=colors.find(GroupedUsage::LegacyColorId(id));
-        if(id==L"AIUsageKimiSummary" || id==L"AIUsageAntigravitySummary") {
+        if(id==L"AIUsageKimiSummary" || id==L"AIUsageAntigravitySummary" || id==L"AIUsageAntigravityClaudeSummary" || id==L"AIUsageAntigravityArgonSummary") {
             const wchar_t* donorId = id==L"AIUsageKimiSummary" ? L"AIUsageClaudeSummary" : L"AIUsageCursorSummary";
             auto donor=colors.find(donorId);
             if(donor==colors.end()) donor=colors.find(GroupedUsage::LegacyColorId(donorId));

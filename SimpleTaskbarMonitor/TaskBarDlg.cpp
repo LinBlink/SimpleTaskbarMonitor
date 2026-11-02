@@ -1,4 +1,4 @@
-// TaskBarDlg.cpp : 实现文件
+﻿// TaskBarDlg.cpp : 实现文件
 //
 
 #include "stdafx.h"
@@ -18,7 +18,8 @@
 static AIUsageLayout::Layout MeasureAIColumns(CDC* dc, const wchar_t* id, int gap)
 {
     return AIUsageLayout::MeasureColumns(AIUsageLayout::ColumnCount(id),
-        [dc](const std::wstring& text) { return static_cast<int>(dc->GetTextExtent(text.c_str()).cx); }, gap);
+        [dc](const std::wstring& text) { return static_cast<int>(dc->GetTextExtent(text.c_str()).cx); }, gap,
+        std::wstring(id) == L"AIUsageCursorSummary");
 }
 
 #ifdef DEBUG
@@ -377,8 +378,7 @@ void CTaskBarDlg::DrawPluginItem(IDrawCommon& drawer, IPluginItem* item, CRect r
         CRect label_top{rect.left, rect.top, rect.left + label_width - DPI(4), middle};
         CRect label_bottom{label_top.left, middle, label_top.right, rect.bottom};
         drawer.DrawWindowText(label_top, theApp.m_taskbar_data.disp_str.GetConst(item).c_str(), label_text_color);
-        const wchar_t* second_label = count == 2 ? (std::wstring(item->GetItemId()) == L"AIUsageCursorSummary" ? L"MO" : L"RST") :
-            (std::wstring(item->GetItemId()) == L"AIUsageKimiSummary" ? L"MO" : L"WK");
+        const wchar_t* second_label = (std::wstring(item->GetItemId()) == L"AIUsageCursorSummary" || std::wstring(item->GetItemId()) == L"AIUsageKimiSummary") ? L"MO" : L"WK";
         if (label_width > 0) drawer.DrawWindowText(label_bottom, second_label, label_text_color);
         const int left = rect.left + label_width;
         bool stale[2]{};
@@ -808,10 +808,11 @@ void CTaskBarDlg::CalculateWindowSize()
     std::map<CommonDisplayItem, ItemWidth> item_widths;
 
     m_pDC->SelectObject(&m_font);
-    // Use the same label width for all AI providers, including custom labels.
+    // Use the same base label width for 2-letter AI providers, expanding for wider labels like AG-G:.
     int ai_label_width = 0;
-    for (int i = 0; auto item = Builtin::AIUsage()->GetItem(i); ++i)
-        ai_label_width = max(ai_label_width, m_pDC->GetTextExtent(theApp.m_taskbar_data.disp_str.GetConst(item).c_str()).cx);
+    for (int i = 0; i < 5; ++i)
+        if (auto item = Builtin::AIUsage()->GetItem(i))
+            ai_label_width = max(ai_label_width, m_pDC->GetTextExtent(theApp.m_taskbar_data.disp_str.GetConst(item).c_str()).cx);
     if (ai_label_width > 0) ai_label_width += DPI(4);
     //计算标签和数值的宽度
     //const auto& item_map = theApp.m_taskbar_data.disp_str.GetAllItems();
@@ -838,7 +839,7 @@ void CTaskBarDlg::CalculateWindowSize()
                     value_width = m_pDC->GetTextExtent(plugin->GetItemValueSampleText()).cx;
                     if (AIUsageLayout::ColumnCount(plugin->GetItemId()))
                     {
-                        label_width = ai_label_width;
+                        label_width = max(ai_label_width, label_width + DPI(4));
                         value_width = MeasureAIColumns(m_pDC, plugin->GetItemId(), DPI(2)).width;
                     }
                 }

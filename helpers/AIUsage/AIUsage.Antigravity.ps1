@@ -1,6 +1,46 @@
+function Add-AntigravityBucket($out,$key,$fraction,$reset) {
+    if($null -eq $fraction) { return }
+    $n=[double]$fraction
+    if([double]::IsNaN($n) -or [double]::IsInfinity($n)) { return }
+    $w=Window (100*$n) $reset
+    if($w.resetEpoch -le 86400) { $w.resetEpoch=0 }
+    $w.rawFraction=$n
+    if(!$out.ContainsKey($key) -or $n -lt $out[$key].rawFraction) { $out[$key]=$w }
+}
 function Parse-Antigravity($response) {
+    $out=@{}
+    $groups=@()
+    if($response.groups) { $groups=@($response.groups) }
+    elseif($response.quotas) { $groups=@($response.quotas) }
+    elseif($response.command -and $response.command.data -and $response.command.data.groups) { $groups=@($response.command.data.groups) }
+    foreach($group in $groups) {
+        $gname=[string]$group.displayName
+        if(!$gname) { $gname=[string]$group.name }
+        if(!$gname) { $gname=[string]$group.groupName }
+        foreach($b in @($group.buckets)) {
+            $bid=[string]$b.bucketId
+            if(!$bid) { $bid=[string]$b.id }
+            if(!$bid) { $bid=[string]$b.quotaId }
+            $win=[string]$b.window
+            $frac=$b.remainingFraction
+            if($null -eq $frac) { $frac=$b.remaining_fraction }
+            if($null -eq $frac -and $null -ne $b.remainingPercentage) { $frac=([double]$b.remainingPercentage)/100.0 }
+            $rst=$b.resetTime
+            if(!$rst) { $rst=$b.reset_time }
+            if($bid -like '*argon*' -or $gname -match '(?i)argon') {
+                Add-AntigravityBucket $out 'antigravityArgonWeek' $frac $rst
+            } elseif($bid -like '3p-*' -or $bid -like 'claude-*' -or $gname -match '(?i)claude|gpt') {
+                if($win -eq '5h' -or $bid -like '*-5h') { Add-AntigravityBucket $out 'antigravityClaude5h' $frac $rst }
+                else { Add-AntigravityBucket $out 'antigravityClaudeWeek' $frac $rst }
+            } elseif($bid -like 'gemini-*' -or $gname -match '(?i)gemini') {
+                if($win -eq '5h' -or $bid -like '*-5h') { Add-AntigravityBucket $out 'antigravityGemini5h' $frac $rst }
+                else { Add-AntigravityBucket $out 'antigravityGeminiWeek' $frac $rst }
+            }
+            Add-AntigravityBucket $out 'antigravityPlan' $frac $rst
+        }
+    }
     $models=@()
-    if($response.models) {
+    if($out.Count -eq 0 -and $response.models) {
         foreach($prop in $response.models.PSObject.Properties) {
             $m=$prop.Value
             if($m.isInternal) { continue }
@@ -8,13 +48,12 @@ function Parse-Antigravity($response) {
             $models+=$m
         }
     }
-    if($models.Count -eq 0 -and $response.available_models.response.clientModelConfigs) {
+    if($out.Count -eq 0 -and $models.Count -eq 0 -and $response.available_models.response.clientModelConfigs) {
         $models=@($response.available_models.response.clientModelConfigs)
     }
-    if($models.Count -eq 0 -and $response.user_status.userStatus.cascadeModelConfigData.clientModelConfigs) {
+    if($out.Count -eq 0 -and $models.Count -eq 0 -and $response.user_status.userStatus.cascadeModelConfigData.clientModelConfigs) {
         $models=@($response.user_status.userStatus.cascadeModelConfigData.clientModelConfigs)
     }
-    $best=$null
     $labels=New-Object 'Collections.Generic.HashSet[string]'
     foreach($model in @($models)) {
         $quota=$model.quotaInfo
@@ -22,12 +61,16 @@ function Parse-Antigravity($response) {
         $label=$model.label
         if(!$label) { $label=$model.displayName }
         if($label -and !$labels.Add([string]$label)) { continue }
-        $fraction=[double]$quota.remainingFraction
-        if([double]::IsNaN($fraction) -or [double]::IsInfinity($fraction)) { continue }
-        if($null -eq $best -or $fraction -lt $best.fraction) { $best=@{fraction=$fraction;reset=$quota.resetTime} }
+        $frac=$quota.remainingFraction
+        $rst=$quota.resetTime
+        if($label -match '(?i)argon') { Add-AntigravityBucket $out 'antigravityArgonWeek' $frac $rst }
+        elseif($label -match '(?i)claude|gpt') { Add-AntigravityBucket $out 'antigravityClaude5h' $frac $rst }
+        elseif($label -match '(?i)gemini') { Add-AntigravityBucket $out 'antigravityGemini5h' $frac $rst }
+        Add-AntigravityBucket $out 'antigravityPlan' $frac $rst
     }
-    if($null -eq $best) { throw 'Antigravity model quota unavailable' }
-    return @{antigravityPlan=(Window (100*$best.fraction) $best.reset)}
+    if($out.Count -eq 0) { throw 'Antigravity model quota unavailable' }
+    foreach($k in @($out.Keys)) { [void]$out[$k].Remove('rawFraction') }
+    return $out
 }
 function Read-AntigravityCredential($target) {
     if(!('AntigravityCredReader' -as [type])) {
@@ -73,6 +116,35 @@ public static class AntigravityCredReader {
     }
     return [AntigravityCredReader]::Read($target)
 }
+function Refresh-AntigravityAccessToken($refreshToken) {
+    if(!$refreshToken) { return $null }
+    $agyExe=Join-Path $env:LOCALAPPDATA 'agy\bin\agy.exe'
+    if(!(Test-Path -LiteralPath $agyExe)) {
+        $cmd=Get-Command agy -ErrorAction SilentlyContinue
+        if($cmd) { $agyExe=$cmd.Source }
+    }
+    if(!(Test-Path -LiteralPath $agyExe)) { return $null }
+    $text=[System.Text.Encoding]::ASCII.GetString([System.IO.File]::ReadAllBytes($agyExe))
+    $cid=[regex]::Match($text,'1071[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com').Value
+    $csec=[regex]::Match($text,'GOCSPX-[A-Za-z0-9_-]{28}').Value
+    if(!$cid -or !$csec) { return $null }
+    $body=@{
+        client_id=$cid
+        client_secret=$csec
+        grant_type='refresh_token'
+        refresh_token=$refreshToken
+    }
+    $tok=Invoke-RestMethod -Uri 'https://oauth2.googleapis.com/token' -Method Post -Body $body -ContentType 'application/x-www-form-urlencoded' -TimeoutSec 15 -MaximumRedirection 0
+    return $tok.access_token
+}
+function Invoke-AntigravityQuotaSummary($accessToken) {
+    $headers=@{
+        Authorization=('Bearer '+$accessToken)
+        'Content-Type'='application/json'
+        'User-Agent'='antigravity/cli/1.4.12 (os_type=windows; arch=amd64; aidev_client; cl=1010700967; auth_method=consumer)'
+    }
+    return Invoke-RestMethod -Uri 'https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary' -Method Post -Body '{}' -Headers $headers -TimeoutSec 15 -MaximumRedirection 0
+}
 function Invoke-AntigravityRpc($baseUri,$token,$method) {
     return Invoke-RestMethod -Uri ($baseUri+'/exa.language_server_pb.LanguageServerService/'+$method) -Method Post -Body '{}' -ContentType 'application/json' -Headers @{'Connect-Protocol-Version'='1';'x-codeium-csrf-token'=$token} -TimeoutSec 5 -MaximumRedirection 0
 }
@@ -86,8 +158,27 @@ function Fetch-Antigravity($settings) {
             if(!$tokenObj) { $tokenObj=$parsed }
             $accessToken=$tokenObj.access_token
             if(!$accessToken) { $accessToken=$tokenObj.accessToken }
+            $refreshToken=$tokenObj.refresh_token
+            if(!$refreshToken) { $refreshToken=$tokenObj.refreshToken }
+            if($tokenObj.expiry) {
+                try {
+                    if([DateTimeOffset]::Parse([string]$tokenObj.expiry,[cultureinfo]::InvariantCulture) -le [DateTimeOffset]::UtcNow.AddMinutes(1) -and $refreshToken) {
+                        $refreshed=Refresh-AntigravityAccessToken $refreshToken
+                        if($refreshed) { $accessToken=$refreshed }
+                    }
+                } catch { }
+            }
             if($accessToken) {
-                $res=Invoke-RestMethod -Uri 'https://daily-cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels' -Method Post -Body '{}' -Headers @{Authorization=('Bearer '+$accessToken);'Content-Type'='application/json';'User-Agent'='antigravity/1.4.12'} -TimeoutSec 15 -MaximumRedirection 0
+                try {
+                    $res=Invoke-AntigravityQuotaSummary $accessToken
+                } catch {
+                    $status=0
+                    if($_.Exception.Response) { $status=[int]$_.Exception.Response.StatusCode }
+                    if(($status -eq 401 -or $status -eq 403) -and $refreshToken) {
+                        $accessToken=Refresh-AntigravityAccessToken $refreshToken
+                        $res=Invoke-AntigravityQuotaSummary $accessToken
+                    } else { throw }
+                }
                 return Parse-Antigravity $res
             }
         } catch {

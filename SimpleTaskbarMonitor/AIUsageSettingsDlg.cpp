@@ -60,8 +60,8 @@ BOOL CAIUsageSettingsDlg::OnInitDialog()
 void CAIUsageSettingsDlg::UpdateStatus()
 {
     const auto path = CachePath();
-    const wchar_t* names[] = { L"MiniMax 5h", L"MiniMax week", L"Codex 5h", L"Codex week", L"Cursor", L"Claude 5h", L"Claude week", L"Kimi 5h", L"Kimi week/month", L"Antigravity" };
-    const wchar_t* keys[] = { L"minimax5h", L"minimaxWeek", L"codex5h", L"codexWeek", L"cursorPlan", L"claude5h", L"claudeWeek", L"kimi5h", L"kimiWeek", L"antigravityPlan" };
+    const wchar_t* names[] = { L"MiniMax 5h", L"MiniMax week", L"Codex 5h", L"Codex week", L"Cursor", L"Claude 5h", L"Claude week", L"Kimi 5h", L"Kimi month", L"Antigravity Gemini 5h", L"Antigravity Gemini week", L"Antigravity Claude/GPT 5h", L"Antigravity Claude/GPT week", L"Antigravity Argon week" };
+    const wchar_t* keys[] = { L"minimax5h", L"minimaxWeek", L"codex5h", L"codexWeek", L"cursorPlan", L"claude5h", L"claudeWeek", L"kimi5h", L"kimiWeek", L"antigravityGemini5h", L"antigravityGeminiWeek", L"antigravityClaude5h", L"antigravityClaudeWeek", L"antigravityArgonWeek" };
     CString text;
     for (size_t i = 0; i < _countof(keys); ++i)
     {
