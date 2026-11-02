@@ -301,7 +301,7 @@ CString CommonDisplayItem::GetItemValueSampleText(bool is_main_window) const
             sample_str = _T("51 %");
             break;
         case TDI_CPU_TEMP: case TDI_GPU_TEMP: case TDI_HDD_TEMP: case TDI_MAIN_BOARD_TEMP:
-            sample_str = _T("40 °C");
+            sample_str = _T("40 \u00B0C");
             break;
         case TDI_CPU_FREQ:
             sample_str = _T("1.0 GHz");
@@ -377,9 +377,9 @@ CString CommonDisplayItem::GetItemValueSampleText(bool is_main_window) const
         case TDI_MAIN_BOARD_TEMP:
         {
             if (theApp.m_taskbar_data.separate_value_unit_with_space)
-                sample_str = _T("99 °C");
+                sample_str = _T("99 \u00B0C");
             else
-                sample_str = _T("99°C");
+                sample_str = _T("99\u00B0C");
         }
             break;
         //CPU频率

@@ -39,6 +39,8 @@ assert exe.parent.name.lower().startswith('debug'), 'Use a Debug build so config
 # Release installations may remain running; this test uses the separate Debug mutex.
 resource_header=Path(__file__).resolve().parents[1]/'SimpleTaskbarMonitor/resource.h'
 header=resource_header.read_text(encoding='utf-8-sig')
+common_source=(resource_header.parent/'Common.cpp').read_text(encoding='utf-8-sig')
+assert '_T("\\u00B0C")' in common_source, 'Celsius unit must use an encoding-independent Unicode escape'
 option_id=int(re.search(r'#define ID_OPTIONS2\s+(\d+)',header)[1])
 temporary=tempfile.TemporaryDirectory(prefix='trafficmonitor-smoke-')
 work=Path(temporary.name)
